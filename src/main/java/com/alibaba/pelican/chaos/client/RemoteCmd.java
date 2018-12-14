@@ -1,0 +1,71 @@
+/*
+ * Copyright (C) 2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.alibaba.pelican.chaos.client;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * @author moyun@middleware
+ */
+public class RemoteCmd {
+
+    protected List<String> cmds = new ArrayList<String>();
+
+    public RemoteCmd() {
+        init();
+    }
+
+    public RemoteCmd(String... cmds) {
+        this();
+        for (String cmd : cmds) {
+            addCmd(cmd);
+        }
+    }
+
+    private void init() {
+        cmds.add("export PS1=\"[\\u@\\h \\w]$\"");
+        cmds.add("export LS_COLORS=\"\"");
+        cmds.add("export LANG=\"en_US.UTF-8\"");
+    }
+
+    public void addCmd(String cmd) {
+        cmds.add(cmd);
+    }
+
+    public String getCmd() {
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<String> iterator = cmds.iterator(); iterator.hasNext(); ) {
+            String cmd = iterator.next();
+            sb.append(cmd);
+            if (iterator.hasNext()) {
+                sb.append(" && ");
+            }
+        }
+        return sb.toString();
+    }
+
+    public List<String> getCmds() {
+        return cmds;
+    }
+
+    public void clear() {
+        cmds.clear();
+        init();
+    }
+}
