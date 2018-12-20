@@ -48,7 +48,7 @@ public interface Machine extends CustomConfiguration, Cloneable {
 
     Machine cloneMachine();
 
-    String getTimeout();
+    Integer getTimeout();
 
     List<Application> getAllApplications();
 

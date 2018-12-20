@@ -15,13 +15,13 @@
  */
 package com.alibaba.pelican.deployment.junit;
 
-import org.apache.commons.lang3.StringUtils;
 import com.alibaba.pelican.deployment.element.Project;
 import com.alibaba.pelican.deployment.junit.rule.EnvironmentModeRule;
 import com.alibaba.pelican.deployment.junit.rule.LogRule;
 import com.alibaba.pelican.deployment.junit.rule.TestCaseEnvModeCheckRule;
 import com.alibaba.pelican.deployment.manager.environment.EnvironmentManager;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Rule;
 import org.junit.rules.RuleChain;
 
@@ -29,11 +29,11 @@ import org.junit.rules.RuleChain;
  * @author moyun@middleware
  */
 @Slf4j
-public abstract class AbstractDtafTestCase {
+public abstract class AbstractJUnit4PelicanTests {
 
-    private static EnvironmentModeRule environmentModeRule = null;
-    private static TestCaseEnvModeCheckRule testCaseEnvModeCheckRule = null;
-    private static LogRule printDocLogRule = null;
+    private static EnvironmentModeRule environmentModeRule;
+    private static TestCaseEnvModeCheckRule testCaseEnvModeCheckRule;
+    private static LogRule printDocLogRule;
 
     @Rule
     public RuleChain ruleChain = RuleChain.outerRule(testCaseEnvModeCheckRule).around(printDocLogRule).around(environmentModeRule);
@@ -47,7 +47,7 @@ public abstract class AbstractDtafTestCase {
         manager = EnvironmentModeRule.getTestEnvironmentManager();
     }
 
-    public Project getDtafTestProject() {
+    public Project getTestProject() {
         if (Boolean.valueOf(System.getProperty("dtaf.skip", "false"))) {
             throw new IllegalAccessError("Found dtaf.skip=true,you can't use DtafTestProject!");
         }

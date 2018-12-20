@@ -70,7 +70,7 @@ public class ProjectConfigurationLoader {
         customizedClass = flowAnnotationFilter.getAnnotationClassImpl(XStreamAlias.class);
         for (Class<?> clazz : customizedClass) {
             configurationLoader.addXstreamAnnotations(clazz);
-            log.info("Add Annotation Class:" + clazz.getName());
+            log.debug("Add Annotation Class:" + clazz.getName());
         }
 
         for (File configurationPath : getAllConfigurationPath()) {
@@ -78,7 +78,7 @@ public class ProjectConfigurationLoader {
             if (StringUtils.isBlank(PropertiesUtil.get(EnvironmentModeRule.ENV_MODE_KEY))
                     || testProject.getEnvironmentMode().equals(PropertiesUtil.get(EnvironmentModeRule.ENV_MODE_KEY))) {
                 this.analyzeTestProject(testProject);
-                log.info(String.format("Parse envMode[%s] successfully!", testProject.getEnvironmentMode()));
+                log.debug(String.format("Parse envMode[%s] successfully!", testProject.getEnvironmentMode()));
             }
             testProjectMaps.put(testProject.getEnvironmentMode(), testProject);
         }

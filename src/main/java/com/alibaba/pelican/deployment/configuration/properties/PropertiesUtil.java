@@ -32,7 +32,7 @@ import java.util.Properties;
 @Slf4j
 public class PropertiesUtil {
 
-    private static final String FRAMEWORK_START_CONFIGURATION = "dtaf.properties";
+    private static final String FRAMEWORK_START_CONFIGURATION = "pelican.properties";
 
     private static final String FRAMEWORK_START_CONFIGURATION_SPECIFIED_PATH = "dtaf.conf.path";
 

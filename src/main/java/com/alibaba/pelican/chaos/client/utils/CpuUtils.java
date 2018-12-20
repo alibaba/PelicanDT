@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.pelican.chaos.client.unit;
+package com.alibaba.pelican.chaos.client.utils;
 
 import com.alibaba.pelican.chaos.client.RemoteCmd;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
@@ -35,13 +35,12 @@ public final class CpuUtils {
 
     private static final String CLONE_SCRIPT = "#! /usr/bin/expect\nset srcpath [lindex $argv 0]\nset dstpath [lindex $argv 1]\nset password [lindex $argv 2]\nspawn %s $srcpath $dstpath\nexpect {\n\"yes/no\" { send \"yes\\r\"; exp_continue}\n\"password:\" { send \"$password\\r\"}\n}\nexpect eof\nexit";
 
-
-    public synchronized static boolean startCPUCtrlAgent(RemoteCmdClient client, String useageString) {
+    public synchronized static boolean adjustCpuUsage(RemoteCmdClient client, String useageString) {
         if (StringUtils.isBlank(useageString)) {
             return false;
         }
 
-        String scriptName = "cpu_usage.sh";
+        String scriptName = "cpu.sh";
         String cpuPID = client.getPID(scriptName);
 
         if (!cpuPID.isEmpty()) {
@@ -65,32 +64,4 @@ public final class CpuUtils {
         return true;
     }
 
-    public synchronized static boolean startMemCtrlAgent(RemoteCmdClient client,
-                                                         String useageString) {
-        if (StringUtils.isBlank(useageString)) {
-            return false;
-        }
-
-        String scriptName = "mem_useage.sh";
-        String memPID = client.getPID(scriptName);
-
-        if (!memPID.isEmpty()) {
-            log.error("Memory useage agent is running, can not start another one.");
-            return false;
-        }
-
-        String scriptDir = client.getDefaultDir() + "/" + "scripts/";
-
-        InputStream is = CpuUtils.class.getResourceAsStream("/" + scriptName);
-        if (!client.createFile(is, scriptName, scriptDir)) {
-            return false;
-        }
-
-        RemoteCmd command = new RemoteCmd();
-        command.addCmd(String.format("cd %s", scriptDir));
-        command.addCmd(String.format("chmod +x %s", scriptName));
-        command.addCmd(String.format("sudo /bin/sh -c \"nohup ./%s %s 5 once &\"", scriptName, useageString));
-        client.execCmdWithPTY(command);
-        return true;
-    }
 }

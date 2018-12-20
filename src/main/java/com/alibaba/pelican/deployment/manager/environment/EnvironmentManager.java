@@ -33,7 +33,6 @@ import com.alibaba.pelican.deployment.utils.ReflectUtils;
 import com.alibaba.pelican.deployment.utils.SystemUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
@@ -121,7 +120,7 @@ public class EnvironmentManager {
     public Project getDefaultTestProject() {
         Project testProject = null;
         if (testProjectMaps.size() != 1) {
-            String message = "The evnModes which configured in path[./env/func,./env/perf] are not unique, dtaf can't define which one to be load in test runtime, please define your envMode first!";
+            String message = "The evnModes which configured in path[./env/func] are not unique, dtaf can't define which one to be load in test runtime, please define your envMode first!";
             log.error(message);
             throw new EnvironmentModeUndefinedException(message);
         }
@@ -130,7 +129,7 @@ public class EnvironmentManager {
             testProject = testProjectMaps.get(name);
             count++;
             if (count >= 2) {
-                String message = "The evnModes which configured in path[./env/func,./env/perf] are not unique, dtaf can't define which one to be load in test runtime, please define your envMode first!";
+                String message = "The evnModes which configured in path[./env/func] are not unique, dtaf can't define which one to be load in test runtime, please define your envMode first!";
                 log.error(message);
                 throw new EnvironmentModeUndefinedException(message);
             }
@@ -147,12 +146,6 @@ public class EnvironmentManager {
         return testProjectMaps.get(envMode);
     }
 
-    /**
-     * 获取的测试工程
-     *
-     * @param envMode
-     * @return
-     */
     public Project getTestProject(String envMode) {
         Project testProject = testProjectMaps.get(envMode);
         if (testProject == null) {
@@ -217,8 +210,7 @@ public class EnvironmentManager {
                     client = remoteCmdClientMap.get(physicalMachine.getIpAddress());
                 } else {
                     client = connectServer(physicalMachine.getIpAddress(),
-                            physicalMachine.getUserName(), physicalMachine.getPassword(),
-                            physicalMachine.getTimeout());
+                            physicalMachine.getUserName(), physicalMachine.getPassword(), physicalMachine.getTimeout());
                 }
                 physicalMachine.setRemoteCmdClient(client);
                 List<Application> applications = physicalMachine.getAllApplications();
@@ -290,8 +282,7 @@ public class EnvironmentManager {
         }
     }
 
-    private RemoteCmdClient connectServer(String ip, String name, String psswd, String timeout)
-            throws Exception {
+    private RemoteCmdClient connectServer(String ip, String name, String password, Integer timeout) throws Exception {
         String key = ip + "@" + name;
         if (remoteCmdClientMap.containsKey(key)) {
             return remoteCmdClientMap.get(key);
@@ -299,10 +290,9 @@ public class EnvironmentManager {
         RemoteCmdClientConfig remoteCmdClientConfig = new RemoteCmdClientConfig();
         remoteCmdClientConfig.setIp(ip);
         remoteCmdClientConfig.setUserName(name);
-        remoteCmdClientConfig.setPassword(psswd);
-        if (NumberUtils.isDigits(timeout)) {
-            remoteCmdClientConfig.setCoTimeout(NumberUtils.toInt(timeout));
-        }
+        remoteCmdClientConfig.setPassword(password);
+        remoteCmdClientConfig.setCoTimeout(timeout);
+
         RemoteCmdClient remoteCmdClient = new RemoteCmdClient(remoteCmdClientConfig);
 
         if (remoteCmdClient.isReady()) {
@@ -321,7 +311,7 @@ public class EnvironmentManager {
             doCustomizedBeforeDeploy();
             log.info("Deploy application...");
             try {
-                log.info("\r\nINFO.deployState=Start");
+                log.info("deployState=Start");
                 testProject.deploy();
                 System.setProperty(EnvironmentModeRule.DEPLOY_STATE, "Success");
             } catch (Throwable e) {
@@ -329,13 +319,13 @@ public class EnvironmentManager {
                         "Deploy End... deploy failed,check deploy log first please!");
                 System.setProperty(EnvironmentModeRule.DEPLOY_STATE, "Failed");
             }
-            log.info("INFO.deployState=End");
+            log.info("deployState=End");
             doCustomizedAfterDeploy();
         } else {
-            log.info("INFO.deployState=Skip");
+            log.info("deployState=Skip");
         }
         log.info("Deploy End...");
-        doCustomizedEnvCheck();// 用户自定义初始化回调，不受deploySkip影响
+        doCustomizedEnvCheck();
     }
 
     private void doCustomizedAfterActive() {

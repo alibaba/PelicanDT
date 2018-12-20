@@ -16,13 +16,11 @@
 
 package com.alibaba.pelican.chaos.client.group;
 
+import com.alibaba.pelican.chaos.client.ICmdGroupExecutor;
 import com.alibaba.pelican.chaos.client.RemoteCmd;
 import com.alibaba.pelican.chaos.client.RemoteCmdClientConfig;
 import com.alibaba.pelican.chaos.client.RemoteCmdResult;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
-import com.alibaba.pelican.chaos.client.task.*;
-import com.alibaba.pelican.chaos.client.ICmdGroupExecutor;
-import com.alibaba.pelican.chaos.client.task.*;
 import com.alibaba.pelican.chaos.client.task.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

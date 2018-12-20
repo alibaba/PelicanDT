@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.pelican.chaos.client.unit;
+package com.alibaba.pelican.chaos.client.utils;
 
 import com.alibaba.pelican.chaos.client.RemoteCmd;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
@@ -33,12 +33,12 @@ public final class MemUtils {
 
     }
 
-    public synchronized static boolean startMemCtrlAgent(RemoteCmdClient client, String useageString) {
+    public synchronized static boolean adjustMemUsage(RemoteCmdClient client, String useageString) {
         if (StringUtils.isBlank(useageString)) {
             return false;
         }
 
-        String scriptName = "mem_useage.sh";
+        String scriptName = "mem.sh";
         String memPID = client.getPID(scriptName);
 
         if (!memPID.isEmpty()) {

@@ -6,7 +6,7 @@
 
     <groupId>com.alibaba.pelican</groupId>
     <artifactId>PelicanDT</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
 
     <properties>
         <com.trilead.version>1.0.0-build217</com.trilead.version>

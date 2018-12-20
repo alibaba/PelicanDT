@@ -306,7 +306,7 @@ public class ReflectUtils {
         Resource[] resources;
         try {
             resources = resolver
-                    .getResources(PathMatchingResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "com/taobao/test/**/*.class");
+                    .getResources(PathMatchingResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "com/alibaba/pelican/**/*.class");
             MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resolver);
             for (Resource r : resources) {
                 MetadataReader reader = readerFactory.getMetadataReader(r);
@@ -326,7 +326,7 @@ public class ReflectUtils {
         Resource[] resources;
         try {
             resources = resolver
-                    .getResources(PathMatchingResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "com/taobao/**/*.class");
+                    .getResources(PathMatchingResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "com/alibaba/pelican/**/*.class");
             MetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resolver);
             for (Resource r : resources) {
                 MetadataReader reader = readerFactory.getMetadataReader(r);

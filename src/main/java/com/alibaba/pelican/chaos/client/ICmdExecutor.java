@@ -37,6 +37,8 @@ public interface ICmdExecutor {
 
     RemoteCmdResult execScript(String path);
 
+    RemoteCmdResult scpAndExecScript(String path);
+
     void killProcess(String keyWord);
 
     String uploadFile(String localFilePath, String remoteTargetDirectory);

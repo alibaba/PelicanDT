@@ -38,7 +38,7 @@ import java.util.concurrent.Future;
 /**
  * @author moyun@middleware
  */
-@XStreamAlias("Project")
+@XStreamAlias("project")
 public class DefaultProject extends AbstractElement implements Project {
 
     protected String projectName;
@@ -52,18 +52,9 @@ public class DefaultProject extends AbstractElement implements Project {
     @XStreamOmitField
     protected boolean actived = false;
 
-    @XStreamAlias("Machines")
+    @XStreamAlias("machines")
     @XStreamImplicit
     private List<Machine> machines = new ArrayList<Machine>();
-
-    @XStreamAlias("SubProject")
-    @XStreamImplicit
-    private List<String> subProjectsPath = new ArrayList<String>();
-
-    private LocalMachine localMachine = new LocalMachine();
-
-    @XStreamOmitField
-    private Map<String, Project> subTestProjectMap = new HashMap<String, Project>();
 
     @XStreamOmitField
     private Map<String, Machine> cacheMachineNameMap = new HashMap<String, Machine>();
@@ -113,42 +104,6 @@ public class DefaultProject extends AbstractElement implements Project {
 
     public void setVersion(int version) {
         this.version = version;
-    }
-
-    @Override
-    public LocalMachine getLocalMachine() {
-        return localMachine;
-    }
-
-    public void setLocalMachine(LocalMachine localMachine) {
-        this.localMachine = localMachine;
-    }
-
-    public Map<String, Project> getSubTestProjectMap() {
-        return subTestProjectMap;
-    }
-
-    public void setSubTestProjectMap(Map<String, Project> subTestProjectMap) {
-        this.subTestProjectMap = subTestProjectMap;
-    }
-
-    @Override
-    public List<String> getSubProjectsPath() {
-        return subProjectsPath;
-    }
-
-    @Override
-    public Project getSubProject(String name) {
-        return subTestProjectMap.get(name);
-    }
-
-    @Override
-    public void addSubProject(Project subProject) {
-        subTestProjectMap.put(subProject.getProjectName(), subProject);
-    }
-
-    public void setSubProjectsPath(List<String> subProjectsPath) {
-        this.subProjectsPath = subProjectsPath;
     }
 
     @Override

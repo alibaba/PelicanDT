@@ -15,6 +15,7 @@
  */
 package com.alibaba.pelican.deployment.element.impl;
 
+import com.alibaba.pelican.chaos.client.RemoteCmdClientConfig;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
 import com.alibaba.pelican.deployment.element.Application;
 import com.alibaba.pelican.deployment.element.Machine;
@@ -32,11 +33,11 @@ import java.util.*;
 /**
  * @author moyun@middleware
  */
-@XStreamAlias("Machine")
+@XStreamAlias("machine")
 @Slf4j
 public class DefaultMachine extends AbstractElement implements Machine {
 
-    @XStreamAlias("Applications")
+    @XStreamAlias("applications")
     @XStreamImplicit
     protected List<Application> applications = new ArrayList<Application>();
 
@@ -46,7 +47,7 @@ public class DefaultMachine extends AbstractElement implements Machine {
     protected String ipAddress = "";
     protected String userName = "";
     protected String password = "";
-    protected String timeout = "";
+    protected Integer timeout = 600 * 1000;
 
     @XStreamOmitField
     transient protected RemoteCmdClient remoteCmdClient;
@@ -57,6 +58,11 @@ public class DefaultMachine extends AbstractElement implements Machine {
     @Override
     public void init() {
         super.init();
+        RemoteCmdClientConfig connectUnit = new RemoteCmdClientConfig();
+        connectUnit.setIp(ipAddress);
+        connectUnit.setUserName(userName);
+        connectUnit.setPassword(password);
+        this.remoteCmdClient = new RemoteCmdClient(connectUnit);
         for (Application application : getAllApplications()) {
             application.setRemoteCmdClient(remoteCmdClient);
             application.init();
@@ -198,11 +204,11 @@ public class DefaultMachine extends AbstractElement implements Machine {
     }
 
     @Override
-    public String getTimeout() {
+    public Integer getTimeout() {
         return timeout;
     }
 
-    public void setTimeout(String timeout) {
+    public void setTimeout(Integer timeout) {
         this.timeout = timeout;
     }
 

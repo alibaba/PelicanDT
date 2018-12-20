@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.pelican.chaos.client.unit;
+package com.alibaba.pelican.chaos.client.utils;
 
 import com.alibaba.pelican.chaos.client.RemoteCmd;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;

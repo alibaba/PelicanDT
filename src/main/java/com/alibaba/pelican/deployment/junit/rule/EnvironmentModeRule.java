@@ -50,7 +50,7 @@ public class EnvironmentModeRule implements TestRule {
             testEnvironmentManager = EnvironmentManager.getInstance();
             if (StringUtils.isNotBlank(value)) {
                 DEPLOY_SKIP = Boolean.valueOf(value);
-                log.info("Rest deploy skip value to:" + value);
+                log.debug("Rest deploy skip value to:" + value);
             }
             String mode = PropertiesUtil.get(ENV_MODE_KEY);
             if (StringUtils.isBlank(mode)) {
@@ -59,22 +59,22 @@ public class EnvironmentModeRule implements TestRule {
                     for (Project testProject : projects) {
                         mode = testProject.getEnvironmentMode();
                         CUR_TEST_MODE = mode;
-                        log.info(String.format("No envMode found,use [%s] as default!", mode));
+                        log.debug(String.format("No envMode found,use [%s] as default!", mode));
                         break;
                     }
                 }
             } else {
                 CUR_TEST_MODE = mode;
-                log.info(String.format("Use [%s] as default envMode!", mode));
+                log.debug(String.format("Use [%s] as default envMode!", mode));
             }
             testEnvironmentManager.setCurrentEnvMode(CUR_TEST_MODE);
-            log.info("Set env mode as:" + CUR_TEST_MODE);
+            log.debug("Set env mode as:" + CUR_TEST_MODE);
             if (!StringUtils.isBlank(CUR_TEST_MODE)) {
                 PropertiesUtil.set(ENV_MODE_KEY, CUR_TEST_MODE);
                 testEnvironmentManager.getTestProject(CUR_TEST_MODE);
             }
         } else {
-            log.info("DTAF had been desabled by argument[dtaf.skip=true]");
+            log.debug("DTAF had been desabled by argument[dtaf.skip=true]");
         }
     }
 

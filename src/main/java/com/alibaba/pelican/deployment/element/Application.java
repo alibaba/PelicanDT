@@ -27,7 +27,7 @@ public interface Application extends CustomConfiguration, Cloneable {
 
     void init();
 
-    String getDeployPath();
+    String getDeployScriptPath();
 
     List<String> getGroup();
 

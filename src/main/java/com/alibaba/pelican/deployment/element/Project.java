@@ -15,8 +15,6 @@
  */
 package com.alibaba.pelican.deployment.element;
 
-import com.alibaba.pelican.deployment.element.impl.LocalMachine;
-
 import java.util.List;
 
 /**
@@ -31,12 +29,6 @@ public interface Project extends CustomConfiguration {
 	void setActived(boolean actived);
 
 	int getVersion();
-
-	List<String> getSubProjectsPath();
-
-	void addSubProject(Project subProject);
-
-	Project getSubProject(String name);
 
 	void addMachine(Machine machine);
 
@@ -59,8 +51,6 @@ public interface Project extends CustomConfiguration {
 	Application getApplicationById(String id);
 
 	String getProjectName();
-
-	LocalMachine getLocalMachine();
 
 	String getEnvironmentMode();
 

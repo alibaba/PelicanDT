@@ -1,0 +1,23 @@
+<project>
+    <properties>
+        <param file="import" value="target/test-classes/env/func/demo.properties"/>
+    </properties>
+    <envMode>demo</envMode>
+    <machine>
+        <id>demo1Machine</id>
+        <ipAddress>${ip}</ipAddress>
+        <userName>${userName}</userName>
+        <password>${password}</password>
+        <application>
+            <id>Demo1</id>
+            <deployScriptPath>demo1.sh</deployScriptPath>
+            <killProcessMark>demo1</killProcessMark>
+        </application>
+        <application>
+            <id>Demo2</id>
+            <deployScriptPath>demo2.sh</deployScriptPath>
+            <killProcessMark>demo2</killProcessMark>
+        </application>
+    </machine>
+
+</project>

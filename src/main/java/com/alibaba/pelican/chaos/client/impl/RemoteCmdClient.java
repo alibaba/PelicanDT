@@ -16,7 +16,6 @@
 
 package com.alibaba.pelican.chaos.client.impl;
 
-import com.alibaba.pelican.chaos.*;
 import com.alibaba.pelican.chaos.client.*;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugDisplayCallable;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugInputCallable;
@@ -29,6 +28,7 @@ import com.trilead.ssh2.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.*;
 import java.util.*;
@@ -50,62 +50,43 @@ public class RemoteCmdClient implements ICmdExecutor {
 
     private Connection connection;
 
-    private RemoteCmdClientConfig connectUnit;
+    private RemoteCmdClientConfig remoteCmdClientConfig;
 
     private boolean ready = false;
 
-    /**
-     * 构造方法，利用ConnectUnit初始化
-     *
-     * @param connectUnit
-     */
     public RemoteCmdClient(RemoteCmdClientConfig connectUnit) {
-        this.connectUnit = connectUnit;
+        this.remoteCmdClientConfig = connectUnit;
         initClient();
     }
 
-    /**
-     * 构造方法，利用参数初始化
-     *
-     * @param ip
-     * @param userName
-     * @param passWord
-     */
     public RemoteCmdClient(String ip, String userName, String passWord) {
-        connectUnit = new RemoteCmdClientConfig(ip, userName, passWord);
+        remoteCmdClientConfig = new RemoteCmdClientConfig(ip, userName, passWord);
         initClient();
     }
 
-    /**
-     * 客户端的ssh连接是否就绪
-     *
-     * @return
-     */
     public boolean isReady() {
         return ready;
     }
 
     public String getIp() {
-        return connectUnit.getIp();
+        return remoteCmdClientConfig.getIp();
     }
 
     public String getDefaultDir() {
-        return connectUnit.getDefaultDir();
+        return remoteCmdClientConfig.getDefaultDir();
     }
 
     public String getUserName() {
-        return connectUnit.getUserName();
+        return remoteCmdClientConfig.getUserName();
     }
 
     private void openConnect(String ip) {
         connection = new Connection(ip);
-        // retry 3 times if connect failed
-        for (int i = 1; i <= connectUnit.getRetryTime(); i++) {
+        for (int i = 1; i <= remoteCmdClientConfig.getRetryTime(); i++) {
             try {
-                // 设置连接超过的socket读超时为120s, 如果不设置则为无超时, 出现网络异常会卡死
-                connection.connect(null, connectUnit.getCoTimeout(), connectUnit.getCoTimeout());
+                connection.connect(null, remoteCmdClientConfig.getCoTimeout(), remoteCmdClientConfig.getCoTimeout());
             } catch (IOException e) {
-                if (i == connectUnit.getRetryTime()) {
+                if (i == remoteCmdClientConfig.getRetryTime()) {
                     String errorInfo = String.format("Open connection failed!Can't connect to %s", ip);
                     throw new ConnectException(errorInfo, e);
                 } else {
@@ -122,10 +103,10 @@ public class RemoteCmdClient implements ICmdExecutor {
     }
 
     private void authConnect() {
-        String userName = connectUnit.getUserName();
-        String passWord = connectUnit.getPassword();
+        String userName = remoteCmdClientConfig.getUserName();
+        String passWord = remoteCmdClientConfig.getPassword();
         String errorMsg = String.format("Open connection failed because of remoteCmdClient's auth [ip=%s,userName=%s]",
-                connectUnit.getIp(), connectUnit.getUserName());
+                remoteCmdClientConfig.getIp(), remoteCmdClientConfig.getUserName());
         try {
             if (StringUtils.isBlank(passWord)) {
                 ready = connection.authenticateWithPublicKey(userName,
@@ -144,24 +125,16 @@ public class RemoteCmdClient implements ICmdExecutor {
     }
 
     public void initClient() {
-        if (StringUtils.isBlank(connectUnit.getIp()) || StringUtils.isBlank(connectUnit.getUserName())) {
-            String errorMsg = String.format(
-                    "Open connection failed because of IP or user name is blank![ip=%s,userName=%s]",
-                    connectUnit.getIp(), connectUnit.getUserName());
-            log.error(errorMsg);
+        if (StringUtils.isBlank(remoteCmdClientConfig.getIp()) || StringUtils.isBlank(remoteCmdClientConfig.getUserName())) {
+            String errorMsg = String.format("Open connection failed because of IP or user name is blank![ip=%s,userName=%s]",
+                    remoteCmdClientConfig.getIp(), remoteCmdClientConfig.getUserName());
             throw new IllegalArgumentException(errorMsg);
         }
-        String ip = connectUnit.getIp();
+        String ip = remoteCmdClientConfig.getIp();
         openConnect(ip);
         authConnect();
     }
 
-    /**
-     * connection是否正常，防止有些机器连接后马上又被对端close的情况
-     *
-     * @param connection
-     * @return 链接状态true false
-     */
     private boolean checkConnectionStatus(Connection connection) {
 
         RemoteCmd cmd = new RemoteCmd();
@@ -174,17 +147,12 @@ public class RemoteCmdClient implements ICmdExecutor {
                 ready = true;
             }
         } catch (Exception e) {
-            log.error(String.format("check connection status failed, ip: %s", connectUnit.getIp()));
+            log.error(String.format("check connection status failed, ip: %s", remoteCmdClientConfig.getIp()));
             ready = false;
         }
         return ready;
     }
 
-    /**
-     * 测试SSH连接是否可用
-     *
-     * @return
-     */
     public boolean isAvailableNow() {
         return checkConnectionStatus(connection);
     }
@@ -192,7 +160,7 @@ public class RemoteCmdClient implements ICmdExecutor {
     @Override
     public RemoteCmdClientStream execCmdGetStream(RemoteCmd cmd) {
         Session session = null;
-        String ip = connectUnit.getIp();
+        String ip = remoteCmdClientConfig.getIp();
         if (!isReady()) {
             log.error(String.format("remoteCmdClient %s is not ready!", ip));
             return new RemoteCmdClientStream(null, ip);
@@ -220,7 +188,7 @@ public class RemoteCmdClient implements ICmdExecutor {
         BufferedReader errbr = null;
         StringBuilder sb = new StringBuilder();
         StringBuilder errsb = new StringBuilder();
-        String ip = connectUnit.getIp();
+        String ip = remoteCmdClientConfig.getIp();
         Session session = null;
         try {
             session = connection.openSession();
@@ -291,8 +259,8 @@ public class RemoteCmdClient implements ICmdExecutor {
         InputStream stderr = null;
         BufferedReader bfStdoutReader = null;
         BufferedReader bfStderrReader = null;
-        String ip = connectUnit.getIp();
-        String passWord = connectUnit.getPassword();
+        String ip = remoteCmdClientConfig.getIp();
+        String passWord = remoteCmdClientConfig.getPassword();
         Session session = null;
         try {
             session = connection.openSession();
@@ -330,7 +298,7 @@ public class RemoteCmdClient implements ICmdExecutor {
             int conditions = session.waitForCondition(ChannelCondition.CLOSED
                     | ChannelCondition.EOF
                     | ChannelCondition.EXIT_STATUS
-                    | ChannelCondition.TIMEOUT, connectUnit.getSoTimeout());
+                    | ChannelCondition.TIMEOUT, remoteCmdClientConfig.getSoTimeout());
 
             log.debug("Here is the output from stdout.......");
             if ((conditions & ChannelCondition.TIMEOUT) != 0) {
@@ -420,8 +388,8 @@ public class RemoteCmdClient implements ICmdExecutor {
     public void exeCmdBlockWithPTY(RemoteCmd cmd, PipedInputStream customerIn) {
         InputStream stderr = null;
         PipedOutputStream customeredOut = new PipedOutputStream();
-        String ip = connectUnit.getIp();
-        String passWord = connectUnit.getPassword();
+        String ip = remoteCmdClientConfig.getIp();
+        String passWord = remoteCmdClientConfig.getPassword();
         Session session = null;
         try {
             session = connection.openSession();
@@ -456,7 +424,7 @@ public class RemoteCmdClient implements ICmdExecutor {
             }
 
             int conditions = session.waitForCondition(ChannelCondition.CLOSED | ChannelCondition.EOF
-                    | ChannelCondition.EXIT_STATUS | ChannelCondition.TIMEOUT, connectUnit.getSoTimeout());
+                    | ChannelCondition.EXIT_STATUS | ChannelCondition.TIMEOUT, remoteCmdClientConfig.getSoTimeout());
 
             log.debug("Here is the output from stdout.......");
             if ((conditions & ChannelCondition.TIMEOUT) != 0) {
@@ -490,8 +458,8 @@ public class RemoteCmdClient implements ICmdExecutor {
         InputStream stderr = null;
         BufferedReader bfStdoutReader = null;
         BufferedReader bfStderrReader = null;
-        String ip = connectUnit.getIp();
-        String passWord = connectUnit.getPassword();
+        String ip = remoteCmdClientConfig.getIp();
+        String passWord = remoteCmdClientConfig.getPassword();
         Session session = null;
         try {
             session = connection.openSession();
@@ -501,7 +469,7 @@ public class RemoteCmdClient implements ICmdExecutor {
 
             List<String> cmds = cmd.getCmds();
 
-            if (connectUnit.getMode() == RemoteCmdClientConfig.CLIENT_MODE_DEBUG) {
+            if (remoteCmdClientConfig.getMode() == RemoteCmdClientConfig.CLIENT_MODE_DEBUG) {
 
                 PipedInputStream pis = new PipedInputStream();
 
@@ -550,7 +518,7 @@ public class RemoteCmdClient implements ICmdExecutor {
             int conditions = session.waitForCondition(ChannelCondition.CLOSED
                     | ChannelCondition.EOF
                     | ChannelCondition.EXIT_STATUS
-                    | ChannelCondition.TIMEOUT, connectUnit.getSoTimeout());
+                    | ChannelCondition.TIMEOUT, remoteCmdClientConfig.getSoTimeout());
 
             log.debug("Here is the output from stdout.......");
             if ((conditions & ChannelCondition.TIMEOUT) != 0) {
@@ -640,7 +608,7 @@ public class RemoteCmdClient implements ICmdExecutor {
     @Override
     public void execCmd(RemoteCmd cmd) {
         List<String> cmds = cmd.getCmds();
-        String ip = connectUnit.getIp();
+        String ip = remoteCmdClientConfig.getIp();
         Session session = null;
         for (String commandLine : cmds) {
             try {
@@ -668,6 +636,19 @@ public class RemoteCmdClient implements ICmdExecutor {
         command.addCmd("cd " + pathMap.get(DIR_NAME));
         command.addCmd("sh " + pathMap.get(FILE_NAME));
         return execCmdWithPTY(command);
+    }
+
+    @Override
+    public RemoteCmdResult scpAndExecScript(String filePath) {
+        if (StringUtils.isBlank(filePath)) {
+            throw new RuntimeException("filePath is empty.");
+        }
+        String scriptDir = this.getDefaultDir() + "/scripts/";
+        this.createFile(filePath, scriptDir);
+        String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+        RemoteCmdResult remoteCmdResult = this.execScript(scriptDir + fileName);
+        log.debug(remoteCmdResult.getStdInfo());
+        return remoteCmdResult;
     }
 
     @Override
@@ -803,11 +784,56 @@ public class RemoteCmdClient implements ICmdExecutor {
                 }
             }
         }
+
         this.uploadFile(localFile.getAbsolutePath(), remoteFolder);
         localFile.delete();
         return true;
     }
 
+    public synchronized boolean createFile(String filePath, String destDirectory) {
+        String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+        if (StringUtils.isBlank(fileName)) {
+            return false;
+        }
+        if (!this.hasFolder(destDirectory)) {
+            this.mkdir(destDirectory);
+        }
+
+        File localFile = new File(fileName);
+        if (getLocalFileSize(localFile) == 0) {
+            BufferedInputStream fis = null;
+            FileOutputStream fos = null;
+            byte[] buffer = new byte[1024];
+            try {
+                localFile.createNewFile();
+                InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
+                fis = new BufferedInputStream(is);
+                fos = new FileOutputStream(localFile);
+                int bytesRead = 0;
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                log.error(ExceptionUtils.getMessage(e));
+                return false;
+            } finally {
+                try {
+                    if (fos != null) {
+                        fos.close();
+                    }
+                    if (fis != null) {
+                        fis.close();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        this.uploadFile(localFile.getAbsolutePath(), destDirectory);
+        localFile.delete();
+        return true;
+    }
 
     public String getPID(String condition) {
         Set<String> conditions = new HashSet<String>();

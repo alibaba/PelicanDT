@@ -16,6 +16,7 @@
 package com.alibaba.pelican.deployment.element.impl;
 
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
+import com.alibaba.pelican.chaos.client.utils.MemUtils;
 import com.alibaba.pelican.deployment.configuration.holder.ConfigurationHolder;
 import com.alibaba.pelican.deployment.configuration.manager.ConfigurationHolderManager;
 import com.alibaba.pelican.deployment.configuration.manager.impl.DefaultConfigurationHolderManager;
@@ -38,21 +39,22 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.Comparator;
 import java.util.List;
 
 /**
  * @author moyun@middleware
  */
-@XStreamAlias("Application")
+@XStreamAlias("application")
 @Slf4j
 public class DefaultApplication extends AbstractElement implements Application {
 
-    protected String deployPath;
+    protected String deployScriptPath;
+
+    protected String startScriptPath;
+
+    protected String killProcessMark;
 
     protected boolean deploySkip = false;
 
@@ -125,8 +127,8 @@ public class DefaultApplication extends AbstractElement implements Application {
         if (remoteCmdClient == null) {
             return true;
         }
-        String res = remoteCmdClient.getPID(keyWordForKillCommand());
-        if (StringUtils.isBlank(keyWordForKillCommand()) || StringUtils.isNotBlank(res)) {
+        String res = remoteCmdClient.getPID(this.killProcessMark);
+        if (StringUtils.isBlank(this.killProcessMark) || StringUtils.isNotBlank(res)) {
             return true;
         }
         return false;
@@ -149,14 +151,9 @@ public class DefaultApplication extends AbstractElement implements Application {
     @Override
     public void start() {
         if (remoteCmdClient != null && remoteCmdClient.isReady()) {
-            String path = startScriptPathForStartCommand();
-            if (StringUtils.isBlank(path)) {
-                log.warn(String.format("No start script found for application [%s]!", id));
-                return;
-            }
-            remoteCmdClient.execScript(path.trim());
+            remoteCmdClient.scpAndExecScript(startScriptPath);
         } else {
-            log.warn(String.format("No ssh remoteCmdClient for application [%s],can not excute start method!", id));
+            log.warn(String.format("No ssh remoteCmdClient for application [%s],can not execute start method!", id));
         }
     }
 
@@ -168,7 +165,7 @@ public class DefaultApplication extends AbstractElement implements Application {
     @Override
     public void stop() {
         if (remoteCmdClient != null && remoteCmdClient.isReady()) {
-            remoteCmdClient.killProcess(keyWordForKillCommand());
+            remoteCmdClient.killProcess(this.killProcessMark);
 
         } else {
             log.warn(String.format("No ssh remoteCmdClient for application [%s],can not excute stop method!", id));
@@ -238,14 +235,6 @@ public class DefaultApplication extends AbstractElement implements Application {
         }
     }
 
-    public String keyWordForKillCommand() {
-        return "";
-    }
-
-    public String startScriptPathForStartCommand() {
-        return "";
-    }
-
     public static class ApplicationPriority implements Comparator<Application> {
         @Override
         public int compare(Application a1, Application a2) {
@@ -253,18 +242,22 @@ public class DefaultApplication extends AbstractElement implements Application {
         }
     }
 
-    public void setDeployPath(String deployPath) {
-        this.deployPath = deployPath;
+    public void setDeployScriptPath(String deployScriptPath) {
+        this.deployScriptPath = deployScriptPath;
     }
 
     @Override
-    public String getDeployPath() {
-        return deployPath;
+    public String getDeployScriptPath() {
+        return deployScriptPath;
     }
 
     @Override
     public void deploy() {
-
+        if (remoteCmdClient != null && remoteCmdClient.isReady()) {
+            remoteCmdClient.scpAndExecScript(deployScriptPath);
+        } else {
+            log.warn(String.format("No ssh remoteCmdClient for application [%s],can not excute deploy method!", id));
+        }
     }
 
     @Override
