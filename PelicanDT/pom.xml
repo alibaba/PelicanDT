@@ -25,7 +25,7 @@
         </developer>
     </developers>
     <scm>
-        <url>http://svn.apache.org/viewvc/maven</url>
+        <url>https://github.com/alibaba/PelicanDT</url>
     </scm>
 
     <properties>
