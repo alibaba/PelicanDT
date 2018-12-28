@@ -16,10 +16,12 @@
 package com.alibaba.pelican.deployment.junit.rule;
 
 
+import junitparams.Parameters;
 import org.apache.commons.lang3.StringUtils;
 import com.alibaba.pelican.deployment.configuration.properties.PropertiesUtil;
 import com.alibaba.pelican.deployment.junit.annotation.EnvironmentMode;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -39,14 +41,20 @@ public class TestCaseEnvModeCheckRule implements TestRule {
         EnvironmentMode envMode = testClass.getAnnotation(EnvironmentMode.class);
         String methodName = description.getMethodName();
         methodName = methodName.replaceAll("\\[[\\s\\S]+\\]$", "");
-        try {
-            Method mothod = testClass.getMethod(methodName, new Class<?>[0]);
-            if (mothod.getAnnotation(EnvironmentMode.class) != null) {
-                envMode = mothod.getAnnotation(EnvironmentMode.class);
+        Method[] methods = testClass.getMethods();
+        for (Method method : methods) {
+            if (method.getAnnotation(Test.class) != null) {
+                if (method.getAnnotation(Parameters.class) != null) {
+                    if (methodName.indexOf("(") != -1) {
+                        methodName = methodName.substring(0, methodName.indexOf("("));
+                    }
+                }
+                if (StringUtils.equals(method.getName(), methodName)) {
+                    if (method.getAnnotation(EnvironmentMode.class) != null) {
+                        envMode = method.getAnnotation(EnvironmentMode.class);
+                    }
+                }
             }
-        } catch (NoSuchMethodException e) {
-            log.error(String.format("Can't find method[%s] in class[%s]!", methodName,
-                    description.getTestClass().getName()), e);
         }
         if (envMode == null) {
             Class<?> superClass = testClass.getSuperclass();

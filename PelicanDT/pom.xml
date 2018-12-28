@@ -41,6 +41,7 @@
         <jaxen.version>1.1.6</jaxen.version>
         <org.projectlombok.version>1.16.6</org.projectlombok.version>
         <common-io.version>2.6</common-io.version>
+        <pl.pragmatists.version>1.1.1</pl.pragmatists.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,11 @@
             <version>${org.springframework.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${org.springframework.version}</version>
+        </dependency>
+        <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
             <version>${jaxen.version}</version>
@@ -103,6 +109,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pl.pragmatists</groupId>
+            <artifactId>JUnitParams</artifactId>
+            <version>${pl.pragmatists.version}</version>
         </dependency>
     </dependencies>
     <profiles>
