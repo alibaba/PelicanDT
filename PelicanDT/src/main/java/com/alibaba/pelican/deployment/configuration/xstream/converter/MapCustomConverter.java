@@ -38,9 +38,6 @@ import java.util.Properties;
  */
 public class MapCustomConverter extends AbstractCollectionConverter {
 
-    /**
-     * @param mapper
-     */
     public MapCustomConverter(Mapper mapper) {
         super(mapper);
     }

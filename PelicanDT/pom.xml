@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba.pelican</groupId>
     <artifactId>PelicanDT</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
     <name>PelicanDT</name>
@@ -81,8 +81,8 @@
             <version>${com.thoughtworks.xstream.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>com.springsource.org.dom4j</artifactId>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
             <version>${dom4j.version}</version>
         </dependency>
         <dependency>

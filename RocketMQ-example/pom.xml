@@ -29,7 +29,7 @@
     </scm>
 
     <properties>
-        <PelicanDT.version>1.0.2</PelicanDT.version>
+        <PelicanDT.version>1.0.4</PelicanDT.version>
         <rocketmq.version>4.3.2</rocketmq.version>
     </properties>
 

@@ -36,9 +36,6 @@ public class ParallelExecutor {
             new LinkedBlockingQueue(1024), new BasicThreadFactory.Builder().namingPattern("parallel-executor-%d")
             .build(), new ThreadPoolExecutor.AbortPolicy());
 
-    /**
-     * 并发执行器
-     */
     public static <T> Map<String, T> execCmdByTask(List<? extends Callable<T>> taskList) {
 
         Map<String, Future<T>> results = new ConcurrentHashMap<String, Future<T>>(16);
