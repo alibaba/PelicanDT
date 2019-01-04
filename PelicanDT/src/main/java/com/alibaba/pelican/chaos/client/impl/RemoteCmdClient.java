@@ -17,12 +17,11 @@
 package com.alibaba.pelican.chaos.client.impl;
 
 import com.alibaba.pelican.chaos.client.*;
+import com.alibaba.pelican.chaos.client.cmd.*;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugDisplayCallable;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugInputCallable;
-import com.alibaba.pelican.chaos.client.cmd.CmdConstant;
-import com.alibaba.pelican.chaos.client.cmd.KillPIDCmdAction;
-import com.alibaba.pelican.chaos.client.cmd.PIDCmdAction;
 import com.alibaba.pelican.chaos.client.cmd.event.CmdEvent;
+import com.alibaba.pelican.chaos.client.dto.NetstatInternetDto;
 import com.alibaba.pelican.chaos.client.exception.ConnectException;
 import com.trilead.ssh2.*;
 import lombok.extern.slf4j.Slf4j;
@@ -652,7 +651,7 @@ public class RemoteCmdClient implements ICmdExecutor {
     }
 
     @Override
-    public void killProcess(String keyWord) {
+    public String killProcess(String keyWord) {
         Set<String> conditions = new HashSet<String>();
         conditions.add(keyWord);
         CmdEvent event = new CmdEvent();
@@ -660,7 +659,9 @@ public class RemoteCmdClient implements ICmdExecutor {
         event.setSourceClient(this);
         event.setWhen(System.currentTimeMillis());
         event.getParams().setGrepConditions(conditions);
-        new KillPIDCmdAction().doAction(event);
+        KillPIDCmdAction cmd = new KillPIDCmdAction();
+        cmd.doAction(event);
+        return (String) event.getResult();
     }
 
     @Override
@@ -835,20 +836,22 @@ public class RemoteCmdClient implements ICmdExecutor {
         return true;
     }
 
+    @Override
     public String getPID(String condition) {
-        Set<String> conditions = new HashSet<String>();
-        conditions.add(condition);
+
         CmdEvent event = new CmdEvent();
         event.setActionCmd(CmdConstant.PROCESS_ID);
         event.setSourceClient(this);
         event.setWhen(System.currentTimeMillis());
+        Set<String> conditions = new HashSet<String>();
+        conditions.add(condition);
         event.getParams().setGrepConditions(conditions);
         PIDCmdAction cmd = new PIDCmdAction();
         cmd.doAction(event);
         return (String) event.getResult();
     }
 
-
+    @Override
     public String getPID(Set<String> conds) {
         CmdEvent event = new CmdEvent();
         event.setActionCmd(CmdConstant.PROCESS_ID);
@@ -859,6 +862,50 @@ public class RemoteCmdClient implements ICmdExecutor {
         cmd.doAction(event);
         return (String) event.getResult();
     }
+
+
+    @Override
+    public String netstatAn(String condition) {
+        CmdEvent event = new CmdEvent();
+        event.setActionCmd(CmdConstant.NETSTAT_AN_INTERNET);
+        event.setSourceClient(this);
+        event.setWhen(System.currentTimeMillis());
+        Set<String> conditions = new HashSet<String>();
+        conditions.add(condition);
+        event.getParams().setGrepConditions(conditions);
+        NetstatANCmdAction cmd = new NetstatANCmdAction();
+        cmd.doAction(event);
+        return (String) event.getResult();
+    }
+
+    @Override
+    public String netstatLnp(String condition) {
+        CmdEvent event = new CmdEvent();
+        event.setActionCmd(CmdConstant.NETSTAT_LNP_INTERNET);
+        event.setSourceClient(this);
+        event.setWhen(System.currentTimeMillis());
+        Set<String> conditions = new HashSet<String>();
+        conditions.add(condition);
+        event.getParams().setGrepConditions(conditions);
+        NetstatLNPCmdAction cmd = new NetstatLNPCmdAction();
+        cmd.doAction(event);
+        return (String) event.getResult();
+    }
+
+    @Override
+    public String jps(String condition) {
+        CmdEvent event = new CmdEvent();
+        event.setActionCmd(CmdConstant.JPS);
+        event.setSourceClient(this);
+        event.setWhen(System.currentTimeMillis());
+        Set<String> conditions = new HashSet<String>();
+        conditions.add(condition);
+        event.getParams().setGrepConditions(conditions);
+        JpsCmdAction cmd = new JpsCmdAction();
+        cmd.doAction(event);
+        return (String) event.getResult();
+    }
+
 
     public void close() {
         connection.close();

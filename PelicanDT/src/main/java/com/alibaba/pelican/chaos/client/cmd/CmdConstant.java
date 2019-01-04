@@ -29,7 +29,7 @@ public class CmdConstant {
     // 取得某个进程的ID
     public static String PROCESS_ID = "PROCESS_ID";
     // 查看Internet连接的命令,netstat -nlp
-    public static String NETSTAT_NLP_INTERNET = "NETSTAT_NLP_INTERNET";
+    public static String NETSTAT_LNP_INTERNET = "NETSTAT_LNP_INTERNET";
     // 查看Internet连接的命令,netstat -an
     public static String NETSTAT_AN_INTERNET = "NETSTAT_AN_INTERNET";
     // 查看Socket连接的命令

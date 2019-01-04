@@ -30,17 +30,29 @@ import java.util.Map;
  */
 @Ignore
 @Slf4j
-public class TestCpuUtils extends AbstractJUnit4PelicanTests {
+public class TestNetAccessUtils extends AbstractJUnit4PelicanTests {
 
     @Test
-    public void test() {
+    public void testIPBlock() {
         Map<String, String> params = ((AbstractElement) this.getTestProject()).getVariables();
         RemoteCmdClientConfig connectUnit = new RemoteCmdClientConfig();
         connectUnit.setPassword(params.get("password"));
         connectUnit.setUserName(params.get("userName"));
         connectUnit.setIp(params.get("ip"));
         RemoteCmdClient commandExecutor = new RemoteCmdClient(connectUnit);
-        CpuUtils.adjustCpuUsage(commandExecutor, 50, 10);
+        NetAccessUtils.blockIPInput(commandExecutor, "124.115.0.199", 60);
     }
+
+    @Test
+    public void testPortBlock() {
+        Map<String, String> params = ((AbstractElement) this.getTestProject()).getVariables();
+        RemoteCmdClientConfig connectUnit = new RemoteCmdClientConfig();
+        connectUnit.setPassword(params.get("password"));
+        connectUnit.setUserName(params.get("userName"));
+        connectUnit.setIp(params.get("ip"));
+        RemoteCmdClient commandExecutor = new RemoteCmdClient(connectUnit);
+        NetAccessUtils.blockPortProtocol(commandExecutor, "8080", "tcp", 60);
+    }
+
 
 }

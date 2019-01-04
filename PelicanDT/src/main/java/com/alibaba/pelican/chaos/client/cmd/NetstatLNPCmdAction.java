@@ -29,7 +29,7 @@ import java.util.Set;
  */
 public class NetstatLNPCmdAction extends AbstractCmdAction {
 
-    public static String NAME = CmdConstant.NETSTAT_NLP_INTERNET;
+    public static String NAME = CmdConstant.NETSTAT_LNP_INTERNET;
 
     private String prefix = "netstat -lnp";
 
@@ -48,13 +48,8 @@ public class NetstatLNPCmdAction extends AbstractCmdAction {
 
         RemoteCmdClient client = event.getSourceClient();
         String resStr = client.execCmdGetString(RemoteCmdFactory.getCmd(super.getExecCmd(event)));
-        Set<String> conds = event.getParams().getGrepConditions();
-        if (conds == null || conds.size() == 0) {
-            resultList = parseStringWithoutGrep(resStr);
-        } else {
-            resultList = parseStringWithGrep(resStr);
-        }
-        event.setResult(resultList);
+
+        event.setResult(resStr);
     }
 
     private List<NetstatInternetDto> parseStringWithGrep(String resStr) {
@@ -107,27 +102,29 @@ public class NetstatLNPCmdAction extends AbstractCmdAction {
             if (!isInternetLine(ress.get(i))) {
                 continue;
             }
+            String netstatResponse = ress.get(i);
+            String[] netstat = netstatResponse.split("\\s+");
             NetstatInternetDto unit = new NetstatInternetDto();
-            String protocol = ress.get(i).substring(0, 6).trim();
+            String protocol = netstat[0];
             unit.setProtocol(protocol);
-            String recv = ress.get(i).substring(6, 13).trim();
+            String recv = netstat[1];
             unit.setRecvQueue(Integer.parseInt(recv));
-            String send = ress.get(i).substring(13, 20).trim();
+            String send = netstat[2];
             unit.setSendQueue(Integer.parseInt(send));
-            String localAddress = ress.get(i).substring(20, 48).trim();
+            String localAddress = netstat[3];
             unit.setLocalAddress(localAddress);
-            String foreignAddress = ress.get(i).substring(48, 76).trim();
+            String foreignAddress = netstat[4];
             unit.setForeignAddress(foreignAddress);
-            String state = ress.get(i).substring(76, 88).trim();
+            String state = netstat[5];
             unit.setState(state);
-            String pidStr = ress.get(i).substring(88, ress.get(i).length()).trim();
-            if (pidStr.equals("-")) {
-                unit.setPid("-");
-                unit.setProgramName("-");
-            } else {
+            if (netstat.length == 7) {
+                String pidStr = netstat[6];
                 int index = pidStr.indexOf("/");
                 unit.setPid(pidStr.substring(0, index));
                 unit.setProgramName(pidStr.substring(index + 1, pidStr.length()));
+            } else {
+                unit.setPid("-");
+                unit.setProgramName("-");
             }
             resultList.add(unit);
         }

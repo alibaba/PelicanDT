@@ -17,6 +17,7 @@
 package com.alibaba.pelican.chaos.client.utils;
 
 import com.alibaba.pelican.chaos.client.RemoteCmd;
+import com.alibaba.pelican.chaos.client.RemoteCmdResult;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,42 +34,7 @@ public class NetAccessUtils {
     private static final int OUTPUT = 2;
     private static final int ALL = 3;
 
-    private boolean doBlockIP(RemoteCmdClient client, List<String> ipList, int delayMinute, int triggerMinute, int type) {
-        if (delayMinute < 0 || triggerMinute < 0) {
-            log.error("The delayMinute or triggerMinute value is invalid.");
-            return false;
-        }
-
-        String cmd = "";
-        if (type >= OUTPUT) {
-            for (String ip : ipList) {
-                cmd += String.format("/sbin/iptables -A OUTPUT -d %s -j DROP;", ip);
-            }
-        }
-        if (type == INPUT || type == ALL) {
-            for (String ip : ipList) {
-                cmd += String.format("/sbin/iptables -A INPUT -s %s -j DROP;", ip);
-            }
-        }
-        String cmdString = String.format("*/1 * * * * crontab -u root -r; sleep %d; %s"
-                        + "sleep %d; /sbin/iptables -F",
-                triggerMinute * 60, cmd, delayMinute * 60);
-
-        RemoteCmd remoteCmd = new RemoteCmd();
-        remoteCmd.addCmd(String.format("echo \"%s\" > ~/task", cmdString));
-        remoteCmd.addCmd("sudo crontab -u root -r");
-        remoteCmd.addCmd(String.format("sudo crontab task"));
-        remoteCmd.addCmd("rm -rf ~/task");
-        client.execCmdWithPTY(remoteCmd);
-        for (String ip : ipList) {
-            log.info(String.format("Block ip %s, dalay time %s minutes, "
-                            + "trigger after %d minutes, type %d.",
-                    ip, delayMinute, triggerMinute, type));
-        }
-        return true;
-    }
-
-    private boolean doBlockIP(RemoteCmdClient client, List<String> ipList, int delaySecond, int type) {
+    private static boolean doBlockIP(RemoteCmdClient client, List<String> ipList, int delaySecond, int triggerSecond, int type) {
         if (delaySecond < 0) {
             log.error("The delaySecond value is invalid.");
             return false;
@@ -77,32 +43,25 @@ public class NetAccessUtils {
         String cmd = "";
         if (type >= OUTPUT) {
             for (String ip : ipList) {
-                cmd += String.format("/sbin/iptables -A OUTPUT -d %s -j DROP;", ip);
+                cmd += String.format("/sbin/iptables -A OUTPUT -d %s -j DROP;\n", ip);
             }
         }
         if (type == INPUT || type == ALL) {
             for (String ip : ipList) {
-                cmd += String.format("/sbin/iptables -A INPUT -s %s -j DROP;", ip);
+                cmd += String.format("/sbin/iptables -A INPUT -s %s -j DROP;\n", ip);
             }
         }
 
-        String cmdString = String.format("#\\!/bin/sh\n"
-                        + "function action()\n"
-                        + "{\n"
-                        + cmd
-                        + "sleep %d\n"
-                        + "/sbin/iptables -F\n"
-                        + "}\n"
-                        + "action &",
-                delaySecond);
+        String cmdString = String.format("#\\!/bin/sh\n function action() {\nsleep %d;\n %s \n sleep %d;\n /sbin/iptables -F \n}\n action &",
+                triggerSecond, cmd, delaySecond);
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("echo \"%s\" > ~/block_ip_task.sh", cmdString));
         remoteCmd.addCmd(String.format("chmod +x ~/block_ip_task.sh"));
         remoteCmd.addCmd(String.format("sudo ~/block_ip_task.sh"));
         remoteCmd.addCmd("rm -rf ~/block_ip_task.sh");
-        client.execCmdWithPTY(remoteCmd);
-
+        RemoteCmdResult remoteCmdResult = client.execCmdWithPTY(remoteCmd);
+        log.info(remoteCmdResult.getStdInfo());
         for (String ip : ipList) {
             log.info(String.format("Block ip %s, dalay time %s seconds, "
                             + "type %d.",
@@ -111,172 +70,95 @@ public class NetAccessUtils {
         return true;
     }
 
-    private boolean doBlockPort(RemoteCmdClient client, String port, String protcol, int delayMinute, int triggerMinute) {
-        if (delayMinute < 0 || triggerMinute < 0) {
-            log.error("The delayMinute or triggerMinute value is invalid.");
-            return false;
-        }
-
-        String cmd = "";
-        cmd += String.format("sudo /sbin/iptables -A INPUT -p %s --dport %s -j DROP",
-                protcol, port);
-        cmd += String.format("sudo /sbin/iptables -A OUTPUT -p %s --sport %s -j DROP",
-                protcol, port);
-        String cmdString = String.format("*/1 * * * * crontab -u root -r; sleep %d; %s"
-                        + "sleep %d; /sbin/iptables -F",
-                triggerMinute * 60, cmd, delayMinute * 60);
-
-        RemoteCmd remoteCmd = new RemoteCmd();
-        remoteCmd.addCmd(String.format("echo \"%s\" > ~/task", cmdString));
-        remoteCmd.addCmd("sudo crontab -u root -r");
-        remoteCmd.addCmd(String.format("sudo crontab task"));
-        remoteCmd.addCmd("rm -rf ~/task");
-        client.execCmdWithPTY(remoteCmd);
-        log.info(String.format("Block port %s protcol %s, dalay time %d minutes, "
-                        + "trigger after %d minutes.",
-                port, protcol, delayMinute, triggerMinute));
-        return true;
-    }
-
-    private boolean doBlockPort(RemoteCmdClient client, String port, String protcol, int delaySecond) {
+    private static boolean doBlockPort(RemoteCmdClient client, String port, String protcol, int delaySecond, int triggerSecond) {
         if (delaySecond < 0) {
             log.error("The delaySecond value is invalid.");
             return false;
         }
 
-
         String cmd = "";
-        cmd += String.format("sudo /sbin/iptables -A INPUT -p %s --dport %s -j DROP",
-                protcol, port);
-        cmd += String.format("sudo /sbin/iptables -A OUTPUT -p %s --sport %s -j DROP",
-                protcol, port);
-        String cmdString = String.format("#\\!/bin/sh\n"
-                        + "function action()\n"
-                        + "{\n"
-                        + cmd
-                        + "sleep %d\n"
-                        + "/sbin/iptables -F\n"
-                        + "}\n"
-                        + "action &",
-                delaySecond);
+        cmd += String.format("sudo /sbin/iptables -A INPUT -p %s --dport %s -j DROP;\n", protcol, port);
+        cmd += String.format("sudo /sbin/iptables -A OUTPUT -p %s --sport %s -j DROP;\n", protcol, port);
+        String cmdString = String.format("#\\!/bin/sh\n function action()\n {\n sleep %d;\n %s \n sleep %d;\n /sbin/iptables -F\n }\n action &",
+                triggerSecond, cmd, delaySecond);
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("echo \"%s\" > ~/block_port_task.sh", cmdString));
         remoteCmd.addCmd(String.format("chmod +x ~/block_port_task.sh"));
         remoteCmd.addCmd(String.format("sudo ~/block_port_task.sh"));
         remoteCmd.addCmd("rm -rf ~/block_port_task.sh");
-        client.execCmdWithPTY(remoteCmd);
-        log.info(String.format("Block port %s protcol %s, dalay time %d seconds.",
-                port, protcol, delaySecond));
+        RemoteCmdResult remoteCmdResult =client.execCmdWithPTY(remoteCmd);
+        log.info(remoteCmdResult.getStdInfo());
+        log.info(String.format("Block port %s protcol %s, dalay time %d seconds.", port, protcol, delaySecond));
         return true;
     }
 
-    public boolean blockIP(RemoteCmdClient client, String ip, int delayMinute) {
+    public static boolean blockIP(RemoteCmdClient client, String ip, int delaySecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delayMinute, 0, ALL);
+        return doBlockIP(client, Arrays.asList(ip), delaySecond, 0, ALL);
     }
 
-    public boolean blockIPInSeconds(RemoteCmdClient client, String ip, int delaySecond) {
+    public static boolean blockIPInput(RemoteCmdClient client, String ip, int delaySecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delaySecond, ALL);
+        return doBlockIP(client, Arrays.asList(ip), delaySecond, 0, INPUT);
     }
 
-    public boolean blockIP(RemoteCmdClient client, List<String> ipList, int delayMinute) {
+    public static boolean blockIPInput(RemoteCmdClient client, List<String> ipList, int delaySecond) {
 
-        return doBlockIP(client, ipList, delayMinute, 0, ALL);
+        return doBlockIP(client, ipList, delaySecond, 0, INPUT);
     }
 
-    public boolean blockIPInSeconds(RemoteCmdClient client, List<String> ipList, int delaySecond) {
+    public static boolean blockIPOutput(RemoteCmdClient client, String ip, int delaySecond) {
 
-        return doBlockIP(client, ipList, delaySecond, ALL);
+        return doBlockIP(client, Arrays.asList(ip), delaySecond, 0, OUTPUT);
     }
 
-    public boolean blockIPInput(RemoteCmdClient client, String ip, int delayMinute) {
+    public static boolean blockIPOutput(RemoteCmdClient client, List<String> ipList, int delaySecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delayMinute, 0, INPUT);
+        return doBlockIP(client, ipList, delaySecond, 0, OUTPUT);
     }
 
-    public boolean blockIPInputInSeconds(RemoteCmdClient client, String ip, int delaySecond) {
+    public static boolean blockIP(RemoteCmdClient client, String ip, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delaySecond, INPUT);
+        return doBlockIP(client, Arrays.asList(ip), delaySecond, triggerSecond, ALL);
     }
 
-    public boolean blockIPInput(RemoteCmdClient client, List<String> ipList, int delayMinute) {
+    public static boolean blockIP(RemoteCmdClient client, List<String> ipList, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, ipList, delayMinute, 0, INPUT);
+        return doBlockIP(client, ipList, delaySecond, triggerSecond, ALL);
     }
 
-    public boolean blockIPInputInSeconds(RemoteCmdClient client, List<String> ipList, int delaySecond) {
+    public static boolean blockIPInput(RemoteCmdClient client, String ip, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, ipList, delaySecond, INPUT);
+        return doBlockIP(client, Arrays.asList(ip), delaySecond, triggerSecond, INPUT);
     }
 
-    public boolean blockIPOutput(RemoteCmdClient client, String ip, int delayMinute) {
+    public static boolean blockIPInput(RemoteCmdClient client, List<String> ipList, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delayMinute, 0, OUTPUT);
+        return doBlockIP(client, ipList, delaySecond, triggerSecond, INPUT);
     }
 
-    public boolean blockIPOutputInSeconds(RemoteCmdClient client, String ip, int delaySecond) {
+    public static boolean blockIPOutput(RemoteCmdClient client, String ip, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delaySecond, OUTPUT);
+        return doBlockIP(client, Arrays.asList(ip), delaySecond, triggerSecond, OUTPUT);
     }
 
-    public boolean blockIPOutput(RemoteCmdClient client, List<String> ipList, int delayMinute) {
+    public static boolean blockIPOutput(RemoteCmdClient client, List<String> ipList, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, ipList, delayMinute, 0, OUTPUT);
+        return doBlockIP(client, ipList, delaySecond, triggerSecond, OUTPUT);
     }
 
-    public boolean blockIPOutputInSeconds(RemoteCmdClient client, List<String> ipList, int delaySecond) {
+    public static boolean blockPortProtocol(RemoteCmdClient client, String port, String protcol, int delaySecond) {
 
-        return doBlockIP(client, ipList, delaySecond, OUTPUT);
+        return doBlockPort(client, port, protcol, delaySecond, 0);
     }
 
-    public boolean blockIP(RemoteCmdClient client, String ip, int delayMinute, int triggerMinute) {
+    public static boolean blockPortProtocol(RemoteCmdClient client, String port, String protcol, int delaySecond, int triggerSecond) {
 
-        return doBlockIP(client, Arrays.asList(ip), delayMinute, triggerMinute, ALL);
+        return doBlockPort(client, port, protcol, delaySecond, triggerSecond);
     }
 
-    public boolean blockIP(RemoteCmdClient client, List<String> ipList, int delayMinute, int triggerMinute) {
-
-        return doBlockIP(client, ipList, delayMinute, triggerMinute, ALL);
-    }
-
-    public boolean blockIPInput(RemoteCmdClient client, String ip, int delayMinute, int triggerMinute) {
-
-        return doBlockIP(client, Arrays.asList(ip), delayMinute, triggerMinute, INPUT);
-    }
-
-    public boolean blockIPInput(RemoteCmdClient client, List<String> ipList, int delayMinute, int triggerMinute) {
-
-        return doBlockIP(client, ipList, delayMinute, triggerMinute, INPUT);
-    }
-
-    public boolean blockIPOutput(RemoteCmdClient client, String ip, int delayMinute, int triggerMinute) {
-
-        return doBlockIP(client, Arrays.asList(ip), delayMinute, triggerMinute, OUTPUT);
-    }
-
-    public boolean blockIPOutput(RemoteCmdClient client, List<String> ipList, int delayMinute, int triggerMinute) {
-
-        return doBlockIP(client, ipList, delayMinute, triggerMinute, OUTPUT);
-    }
-
-    public boolean blockPortProtcol(RemoteCmdClient client, String port, String protcol, int delayMinute) {
-
-        return doBlockPort(client, port, protcol, delayMinute, 0);
-    }
-
-    public boolean blockPortProtcolInSeconds(RemoteCmdClient client, String port, String protcol, int delaySecond) {
-
-        return doBlockPort(client, port, protcol, delaySecond);
-    }
-
-    public boolean blockPortProtcol(RemoteCmdClient client, String port, String protcol, int delayMinute, int triggerMinute) {
-
-        return doBlockPort(client, port, protcol, delayMinute, triggerMinute);
-    }
-
-    public boolean unblockIP(RemoteCmdClient client, String ip) {
+    public static boolean unblockIP(RemoteCmdClient client, String ip) {
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("sudo /sbin/iptables -D OUTPUT -d %s -j DROP", ip));
@@ -286,7 +168,7 @@ public class NetAccessUtils {
         return true;
     }
 
-    public boolean unblockIPInput(RemoteCmdClient client, String ip) {
+    public static boolean unblockIPInput(RemoteCmdClient client, String ip) {
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("sudo /sbin/iptables -D INPUT -s %s -j DROP", ip));
@@ -295,7 +177,7 @@ public class NetAccessUtils {
         return true;
     }
 
-    public boolean unblockIPOutput(RemoteCmdClient client, String ip) {
+    public static boolean unblockIPOutput(RemoteCmdClient client, String ip) {
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("sudo /sbin/iptables -D OUTPUT -d %s -j DROP", ip));
@@ -304,7 +186,7 @@ public class NetAccessUtils {
         return true;
     }
 
-    public boolean unblockPortProtcol(RemoteCmdClient client, String port, String protcol) {
+    public static boolean unblockPortProtcol(RemoteCmdClient client, String port, String protcol) {
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("sudo /sbin/iptables -D INPUT -p %s --dport %s -j DROP",
                 port, protcol));
@@ -315,7 +197,7 @@ public class NetAccessUtils {
         return true;
     }
 
-    public void clearAll(RemoteCmdClient client) {
+    public static void clearAll(RemoteCmdClient client) {
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("sudo /sbin/iptables -F"));
         remoteCmd.addCmd(String.format("sudo /sbin/iptables-save"));

@@ -46,34 +46,8 @@ public class JpsCmdAction extends AbstractCmdAction {
         RemoteCmdClient client = event.getSourceClient();
         RemoteCmdResult result = client.execCmdWithPTY(RemoteCmdFactory.getCmd(getExecCmd(event)));
         String resStr = result.getStdInfo();
-        String items[] = resStr.split("\r\n");
-        for (int i = 0; i < items.length; i++) {
-            if (isCmdLine(items[i]) && items[i].contains("exit")) {
-                start = false;
-            }
-            if (start) {
-                if (StringUtils.isNotBlank(items[i]) && !(items[i].contains("[") && items[i].contains("]"))) {
-                    ress.add(items[i]);
-                }
-            }
-            if (isCmdLine(items[i]) && items[i].contains(super.cmd)) {
-                start = true;
-            }
-        }
-        for (Iterator<String> iterator = ress.iterator(); iterator.hasNext(); ) {
-            String line = iterator.next();
-            if (!isCmdLine(line)) {
-                StringTokenizer st = new StringTokenizer(line);
-                List<String> lst = new ArrayList<String>();
-                while (st.hasMoreElements()) {
-                    lst.add((String) st.nextElement());
-                }
-                if (lst.size() == 2) {
-                    results.put(lst.get(0), lst.get(1));
-                }
-            }
-        }
-        event.setResult(results);
+
+        event.setResult(resStr);
     }
 
     public String getCmd(CmdEvent event) {

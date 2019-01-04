@@ -30,17 +30,28 @@ import java.util.Map;
  */
 @Ignore
 @Slf4j
-public class TestCpuUtils extends AbstractJUnit4PelicanTests {
+public class TestNetTrafficUtils extends AbstractJUnit4PelicanTests {
 
     @Test
-    public void test() {
+    public void testSetPackageLoss() {
         Map<String, String> params = ((AbstractElement) this.getTestProject()).getVariables();
         RemoteCmdClientConfig connectUnit = new RemoteCmdClientConfig();
         connectUnit.setPassword(params.get("password"));
         connectUnit.setUserName(params.get("userName"));
         connectUnit.setIp(params.get("ip"));
         RemoteCmdClient commandExecutor = new RemoteCmdClient(connectUnit);
-        CpuUtils.adjustCpuUsage(commandExecutor, 50, 10);
+        NetTrafficUtils.setPackageLoss(commandExecutor, 10, 10);
+    }
+
+    @Test
+    public void testSetNetworkDelay() {
+        Map<String, String> params = ((AbstractElement) this.getTestProject()).getVariables();
+        RemoteCmdClientConfig connectUnit = new RemoteCmdClientConfig();
+        connectUnit.setPassword(params.get("password"));
+        connectUnit.setUserName(params.get("userName"));
+        connectUnit.setIp(params.get("ip"));
+        RemoteCmdClient commandExecutor = new RemoteCmdClient(connectUnit);
+        NetTrafficUtils.setNetworkDelay(commandExecutor, 10, 10);
     }
 
 }

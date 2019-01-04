@@ -35,15 +35,16 @@ public final class CpuUtils {
 
     private static final String CLONE_SCRIPT = "#! /usr/bin/expect\nset srcpath [lindex $argv 0]\nset dstpath [lindex $argv 1]\nset password [lindex $argv 2]\nspawn %s $srcpath $dstpath\nexpect {\n\"yes/no\" { send \"yes\\r\"; exp_continue}\n\"password:\" { send \"$password\\r\"}\n}\nexpect eof\nexit";
 
-    public synchronized static boolean adjustCpuUsage(RemoteCmdClient client, String useageString) {
-        if (StringUtils.isBlank(useageString)) {
+    public synchronized static boolean adjustCpuUsage(RemoteCmdClient client, int percent, int delayMinutes) {
+        String useageString = percent + ":" + delayMinutes;
+        if (StringUtils.equals(useageString, "0:0")) {
             return false;
         }
 
         String scriptName = "cpu.sh";
         String cpuPID = client.getPID(scriptName);
 
-        if (!cpuPID.isEmpty()) {
+        if (StringUtils.isNotBlank(cpuPID)) {
             log.error("CPU usage agent is running, can not start another one.");
             return false;
         }

@@ -33,15 +33,16 @@ public final class MemUtils {
 
     }
 
-    public synchronized static boolean adjustMemUsage(RemoteCmdClient client, String useageString) {
-        if (StringUtils.isBlank(useageString)) {
+    public synchronized static boolean adjustMemUsage(RemoteCmdClient client, int percent, int delayMinutes) {
+        String useageString = percent + ":" + delayMinutes;
+        if (StringUtils.equals(useageString, "0:0")) {
             return false;
         }
 
         String scriptName = "mem.sh";
         String memPID = client.getPID(scriptName);
 
-        if (!memPID.isEmpty()) {
+        if (StringUtils.isNotBlank(memPID)) {
             log.error("Memory useage agent is running, can not start another one.");
             return false;
         }
