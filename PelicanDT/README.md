@@ -1,15 +1,15 @@
 # PelicanDT In Alibaba
 
-## Integration Testing
+## 集成测试解决方案
 
-## Distribute Environment Deployment
+## 分布式环境部署
 
-## Fault Inject
+## 错误注入
 
-### Cpu
-### Memory
-### Network Access
-### Network traffic
+1. Cpu控制 对机器的CPU占用率进行控制，通过提高CPU利用率，以观察应用的表现是否正常 
+2. 内存控制 对机器的内存进行控制，通过提高内存利用率，以观察应用的表现是否正常
+3. 网络访问控制 对机器的网络访问进行控制，通过限制IP或者端口的访问，以观察应用的表现是否正常
+4. 网络流量控制 对机器的网络流量进行控制，通过调整网络丢包，延迟等问题，以观察应用的表现是否正常
 
 
-## RocketMQ Integration Testing
+## RocketMQ 集成测试
