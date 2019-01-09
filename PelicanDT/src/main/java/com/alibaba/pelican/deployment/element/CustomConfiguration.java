@@ -15,6 +15,8 @@
  */
 package com.alibaba.pelican.deployment.element;
 
+import com.alibaba.pelican.deployment.configuration.xstream.entity.XstreamMap;
+
 import java.io.Serializable;
 import java.util.Map;
 
@@ -34,6 +36,8 @@ public interface CustomConfiguration extends Serializable {
     Map<String, String> getProperties();
 
     String getCustomizedVariable(String key);
+
+    XstreamMap<String, String> getVariables();
 
     boolean isDisabled();
 }

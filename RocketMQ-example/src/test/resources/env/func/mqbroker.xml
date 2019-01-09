@@ -10,6 +10,11 @@
         <password>${password}</password>
         <timeout>600000</timeout>
         <application>
+            <id>mqnamesrv</id>
+            <deployScriptPath>mqnamesrv.sh</deployScriptPath>
+            <killProcessMark>mqnamesrv</killProcessMark>
+        </application>
+        <application>
             <id>mqbroker</id>
             <deployScriptPath>mqbroker.sh</deployScriptPath>
             <killProcessMark>mqbroker</killProcessMark>

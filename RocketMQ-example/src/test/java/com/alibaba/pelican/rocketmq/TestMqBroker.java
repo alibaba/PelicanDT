@@ -28,7 +28,7 @@ public class TestMqBroker extends AbstractJUnit4PelicanTests {
 	private String namesrvAddr;
 
 	{
-		Map<String, String> params = this.getTestProject().getProperties();
+		Map<String, String> params = this.getTestProject().getVariables();
 		namesrvAddr = params.get("namesrvAddr");
 	}
 

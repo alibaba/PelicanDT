@@ -62,10 +62,14 @@ function check_args()
                 exit -1
     fi
 
-	mem_useage_now=`free -m |grep Mem| awk '{print $3}'`
+	mem_free=`free -m |grep Mem| awk '{print $4}'`;
+	mem_total=`free -m |grep Mem| awk '{print $2}'`;
+	mem_useage_now=`expr $mem_total - $mem_free`;
 	for i in ${MEM_USEAGE_MAP[@]:0}; do
         echo $i | while IFS=: read MEM_USEAGE_UP_TO IGNORE ; do
             if [ $mem_useage_now -gt $MEM_USEAGE_UP_TO ]; then
+                echo $mem_useage_now
+                echo $MEM_USEAGE_UP_TO
                 echo "target is smaller than real, exit."
                 exit -1
             fi
@@ -87,10 +91,9 @@ function clear()
 
 function check_mem_useage()
 {
-	mem_buffer_now=`free -m |grep Mem| awk '{print $6}'`
-	mem_cached_now=`free -m |grep Mem| awk '{print $7}'`
-	mem_total_useage_now=`free -m |grep Mem| awk '{print $3}'`
-	mem_useage_now=`expr $mem_total_useage_now - $mem_buffer_now - $mem_cached_now + $FILE_CREATE_TOTAL`
+	mem_free=`free -m |grep Mem| awk '{print $4}'`;
+    mem_total=`free -m |grep Mem| awk '{print $2}'`;
+    mem_useage_now=`expr $mem_total - $mem_free`;
     echo mem_useage_now $mem_useage_now
     #adjust when now cpu useage is less then target
     if [ $mem_useage_now -lt $MEM_USEAGE_UP_TO ]; then
@@ -104,10 +107,9 @@ function check_mem_useage()
 
 function do_adjust()
 {
-	mem_buffer_now=`free -m |grep Mem| awk '{print $6}'`
-	mem_cached_now=`free -m |grep Mem| awk '{print $7}'`
-	mem_total_useage_now=`free -m |grep Mem| awk '{print $3}'`
-	mem_useage_now=`expr $mem_total_useage_now - $mem_buffer_now - $mem_cached_now + $FILE_CREATE_TOTAL`
+	mem_free=`free -m |grep Mem| awk '{print $4}'`;
+    mem_total=`free -m |grep Mem| awk '{print $2}'`;
+    mem_useage_now=`expr $mem_total - $mem_free`;
 	if [ $MEM_USEAGE_UP_TO -gt $mem_useage_now ]; then
 		echo MEM_USEAGE_UP_TO $MEM_USEAGE_UP_TO
 		echo mem_useage_now $mem_useage_now

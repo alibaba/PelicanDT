@@ -40,7 +40,7 @@ public class TestMemUtils extends AbstractJUnit4PelicanTests {
         connectUnit.setUserName(params.get("userName"));
         connectUnit.setIp(params.get("ip"));
         RemoteCmdClient commandExecutor = new RemoteCmdClient(connectUnit);
-        MemUtils.adjustMemUsage(commandExecutor, 50, 10);
+        MemUtils.adjustMemUsage(commandExecutor, 5000, 10);
     }
 
 }

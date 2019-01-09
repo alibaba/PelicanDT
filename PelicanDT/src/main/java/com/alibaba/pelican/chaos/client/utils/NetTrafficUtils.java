@@ -27,31 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NetTrafficUtils {
 
-    private static String nicName;
-
-    private static void getNICName(RemoteCmdClient client) {
-        String ip = client.getIp();
-        String cmdString = "for nic in `/sbin/ifconfig | grep encap | awk -F \" \" '{ print $1 }'`; do if [ ! -z \"`/sbin/ifconfig $nic | grep -w %s`\" ]; then echo $nic; fi; done";
-        RemoteCmd remoteCmd = new RemoteCmd();
-        remoteCmd.addCmd(String.format(cmdString, ip));
-        String execCmdResponse = client.execCmdGetString(remoteCmd);
-        if (execCmdResponse.equals("")) {
-            cmdString = "for nic in `/sbin/ifconfig | grep flags | awk -F \":\" '{ print $1 }'`; do if [ ! -z \"`/sbin/ifconfig $nic | grep -w %s`\" ]; then echo $nic; fi; done";
-            RemoteCmd remoteCmd2 = new RemoteCmd();
-            remoteCmd2.addCmd(String.format(cmdString, ip));
-            execCmdResponse = client.execCmdGetString(remoteCmd2);
-        }
-        log.info(execCmdResponse);
-        nicName = execCmdResponse.replaceAll("\n", "").replaceAll("\r", "");
-    }
-
-    private static boolean doSetNetWorkDelay(RemoteCmdClient client, int milliseconds, int delaySecond, int triggerSecond) {
-        if (milliseconds > 10000 || milliseconds <= 0 || delaySecond < 0) {
+    private static boolean doSetNetWorkDelay(RemoteCmdClient client, String networkCard, int delayTime, int delaySecond, int triggerSecond) {
+        if (delayTime > 10000 || delayTime <= 0 || delaySecond < 0) {
             log.error("The value is invalid, valid range is (0, 10000]");
             return false;
-        }
-        if (nicName == null) {
-            getNICName(client);
         }
 
         String cmdString = String.format("#\\!/bin/sh\n"
@@ -67,8 +46,8 @@ public class NetTrafficUtils {
                         + "/sbin/tc qdisc del dev %s root\n"
                         + "}\n"
                         + "action &",
-                triggerSecond, nicName, milliseconds,
-                nicName, milliseconds, delaySecond, nicName);
+                triggerSecond, networkCard, delayTime,
+                networkCard, delayTime, delaySecond, networkCard);
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("echo \"%s\" > ~/task.sh", cmdString));
@@ -78,17 +57,14 @@ public class NetTrafficUtils {
         RemoteCmdResult remoteCmdResult = client.execCmdWithPTY(remoteCmd);
         log.info(remoteCmdResult.getStdInfo());
         log.info(String.format("Set network delay to %dms, dalay time %s seconds.",
-                milliseconds, delaySecond));
+                delayTime, delaySecond));
         return true;
     }
 
-    private static boolean doSetPackageLoss(RemoteCmdClient client, int percent, int delaySecond, int triggerSecond) {
+    private static boolean doSetPackageLoss(RemoteCmdClient client, String networkCard, int percent, int delaySecond, int triggerSecond) {
         if (percent > 50 || percent <= 0 || delaySecond < 0) {
             log.error("The value is invalid, valid range is (0%, 50%]");
             return false;
-        }
-        if (nicName == null) {
-            getNICName(client);
         }
 
         String cmdString = String.format("#\\!/bin/bash\n"
@@ -104,8 +80,8 @@ public class NetTrafficUtils {
                         + "/sbin/tc qdisc del dev %s root\n"
                         + "}\n"
                         + "action &",
-                triggerSecond, nicName, percent,
-                nicName, percent, delaySecond, nicName);
+                triggerSecond, networkCard, percent,
+                networkCard, percent, delaySecond, networkCard);
 
         RemoteCmd remoteCmd = new RemoteCmd();
         remoteCmd.addCmd(String.format("echo \"%s\" > ~/task2.sh", cmdString));
@@ -119,45 +95,75 @@ public class NetTrafficUtils {
         return true;
     }
 
+    /**
+     * default networkCard: eth0
+     */
     public static boolean setPackageLoss(RemoteCmdClient client, int percent, int delaySecond) {
 
-        return doSetPackageLoss(client, percent, delaySecond, 0);
+        return setPackageLoss(client, "eth0", percent, delaySecond);
+    }
+
+    public static boolean setPackageLoss(RemoteCmdClient client, String networkCard, int percent, int delaySecond) {
+
+        return setPackageLoss(client, networkCard, percent, delaySecond, 0);
+    }
+
+    public static boolean setPackageLoss(RemoteCmdClient client, String networkCard, int percent, int delaySecond, int triggerSecond) {
+        return doSetPackageLoss(client, networkCard, percent, delaySecond, triggerSecond);
     }
 
     public static boolean setPackageLoss(RemoteCmdClient client, int percent, int delaySecond, int triggerSecond) {
 
-        return doSetPackageLoss(client, percent, delaySecond, triggerSecond);
+        return setPackageLoss(client, "eth0", percent, delaySecond, triggerSecond);
     }
 
-    public static boolean setNetworkDelay(RemoteCmdClient client, int milliseconds, int delaySecond) {
+    public static boolean setNetworkDelay(RemoteCmdClient client, int delayTime, int delaySecond) {
 
-        return doSetNetWorkDelay(client, milliseconds, delaySecond, 0);
+        return setNetworkDelay(client, "eth0", delayTime, delaySecond);
     }
 
-    public static boolean setNetworkDelay(RemoteCmdClient client, int milliseconds, int delaySecond, int triggerSecond) {
+    public static boolean setNetworkDelay(RemoteCmdClient client, String networkCard, int delayTime, int delaySecond) {
 
-        return doSetNetWorkDelay(client, milliseconds, delaySecond, triggerSecond);
+        return setNetworkDelay(client, networkCard, delayTime, delaySecond, 0);
+    }
+
+    public static boolean setNetworkDelay(RemoteCmdClient client, int delayTime, int delaySecond, int triggerSecond) {
+        return setNetworkDelay(client, "eth0", delayTime, delaySecond, triggerSecond);
+    }
+
+    public static boolean setNetworkDelay(RemoteCmdClient client, String networkCard, int delayTime, int delaySecond, int triggerSecond) {
+
+        return doSetNetWorkDelay(client, networkCard, delayTime, delaySecond, triggerSecond);
     }
 
     public static void clearNetworkDelay(RemoteCmdClient client) {
-        clearTrafficCtrl(client);
+        clearNetTraffic(client, "eth0");
+        log.info(String.format("Clear network delay."));
+        return;
+    }
+
+    public static void clearNetworkDelay(RemoteCmdClient client, String networkCard) {
+        clearNetTraffic(client, networkCard);
         log.info(String.format("Clear network delay."));
         return;
     }
 
     public static void clearPackageLoss(RemoteCmdClient client) {
-        clearTrafficCtrl(client);
+        clearNetTraffic(client, "eth0");
         log.info(String.format("Clear package loss."));
         return;
     }
 
-    private static void clearTrafficCtrl(RemoteCmdClient client) {
-        if (nicName == null) {
-            getNICName(client);
-        }
+    public static void clearPackageLoss(RemoteCmdClient client, String networkCard) {
+        clearNetTraffic(client, networkCard);
+        log.info(String.format("Clear package loss."));
+        return;
+    }
+
+    private static void clearNetTraffic(RemoteCmdClient client, String networkCard) {
         String cmdString = "sudo /sbin/tc qdisc del dev %s root";
         RemoteCmd remoteCmd = new RemoteCmd();
-        remoteCmd.addCmd(String.format(cmdString, nicName));
+        remoteCmd.addCmd(String.format(cmdString, networkCard));
         for (int i = 0; i < 10; i++) {
             client.execCmdWithPTY(remoteCmd);
         }

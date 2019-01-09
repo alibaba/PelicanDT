@@ -328,7 +328,6 @@ public class RemoteCmdClient implements ICmdExecutor {
                     res.setStdInfo("");
                 }
 
-                log.debug("Here is the output from stderr.......");
                 StringBuilder sberr = new StringBuilder();
                 while ((len = stderr.read(buffer)) != -1) {
                     if (len > 0) {
@@ -341,7 +340,6 @@ public class RemoteCmdClient implements ICmdExecutor {
                 res.setErrInfo(sberr.toString());
             }
 
-            log.debug("ExitCode is: " + session.getExitStatus());
             return res;
 
         } catch (IOException e) {
@@ -548,7 +546,6 @@ public class RemoteCmdClient implements ICmdExecutor {
                     res.setStdInfo("");
                 }
 
-                log.debug("Here is the output from stderr.......");
                 StringBuilder sberr = new StringBuilder();
                 while ((len = stderr.read(buffer)) != -1) {
                     if (len > 0) {
