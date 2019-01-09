@@ -17,11 +17,13 @@ package com.alibaba.pelican.chaos.client;
 
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author moyun@middleware
  */
+@Ignore
 @Slf4j
 public class TestRemoteCmdClient {
 
