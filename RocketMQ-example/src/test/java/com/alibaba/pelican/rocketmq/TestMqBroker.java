@@ -25,11 +25,11 @@ import java.util.Map;
 public class TestMqBroker extends AbstractJUnit4PelicanTests {
 
 
-	private String namesrvAddr;
+	private String ip;
 
 	{
 		Map<String, String> params = this.getTestProject().getVariables();
-		namesrvAddr = params.get("namesrvAddr");
+		ip = params.get("ip");
 	}
 
 	@Test
@@ -39,7 +39,7 @@ public class TestMqBroker extends AbstractJUnit4PelicanTests {
 		DefaultMQProducer producer = new
 				DefaultMQProducer("please_rename_unique_group_name");
 		// Specify name server addresses.
-		producer.setNamesrvAddr(namesrvAddr);
+		producer.setNamesrvAddr(ip + ":9876");
 		//Launch the instance.
 		producer.start();
 		for (int i = 0; i < 100; i++) {
@@ -60,7 +60,7 @@ public class TestMqBroker extends AbstractJUnit4PelicanTests {
 		DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("please_rename_unique_group_name");
 
 		// Specify name server addresses.
-		consumer.setNamesrvAddr(namesrvAddr);
+		consumer.setNamesrvAddr(ip + ":9876");
 
 		// Subscribe one more more topics to consume.
 		consumer.subscribe("TopicTest", "*");

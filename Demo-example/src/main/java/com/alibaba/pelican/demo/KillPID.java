@@ -3,12 +3,11 @@ package com.alibaba.pelican.demo;
 import com.alibaba.pelican.chaos.client.RemoteCmdClientConfig;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
 import com.alibaba.pelican.chaos.client.utils.CpuUtils;
-import com.alibaba.pelican.chaos.client.utils.MemUtils;
 
 /**
  * @author moyun@middleware
  */
-public class DemoMem {
+public class KillPID {
 
     public static void main(String[] args) {
 
@@ -24,10 +23,7 @@ public class DemoMem {
         config.setPassword(password);
 
         RemoteCmdClient client = new RemoteCmdClient(config);
-        //内存比例
-        int percent = 6000;
-        //持续时间
-        int delayMinutes = 3;
-        MemUtils.adjustMemUsage(client, percent, delayMinutes);
+
+        client.killProcess("vmstat");
     }
 }
