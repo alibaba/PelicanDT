@@ -24,7 +24,7 @@ public class DemoCPU {
 
         RemoteCmdClient client = new RemoteCmdClient(config);
         //CPU占用比例
-        int percent = 2000;
+        int percent = 70;
         //持续时间
         int delayMinutes = 3;
         CpuUtils.adjustCpuUsage(client, percent, delayMinutes);

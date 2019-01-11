@@ -54,8 +54,7 @@ public class NetTrafficUtils {
         remoteCmd.addCmd(String.format("chmod +x ~/task.sh"));
         remoteCmd.addCmd(String.format("sudo ~/task.sh"));
         remoteCmd.addCmd("rm -rf ~/task.sh");
-        RemoteCmdResult remoteCmdResult = client.execCmdWithPTY(remoteCmd);
-        log.info(remoteCmdResult.getStdInfo());
+        client.execCmdWithPTY(remoteCmd);
         log.info(String.format("Set network delay to %dms, dalay time %s seconds.",
                 delayTime, delaySecond));
         return true;
@@ -88,8 +87,7 @@ public class NetTrafficUtils {
         remoteCmd.addCmd("chmod +x ~/task2.sh");
         remoteCmd.addCmd(String.format("sudo ~/task2.sh"));
         remoteCmd.addCmd("rm -rf ~/task2.sh");
-        RemoteCmdResult remoteCmdResult = client.execCmdWithPTY(remoteCmd);
-        log.info(remoteCmdResult.getStdInfo());
+        client.execCmdWithPTY(remoteCmd);
         log.info(String.format("Set package loss to %d%%, dalay time %s second.",
                 percent, delaySecond));
         return true;

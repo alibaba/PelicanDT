@@ -60,8 +60,7 @@ public class NetAccessUtils {
         remoteCmd.addCmd(String.format("chmod +x ~/block_ip_task.sh"));
         remoteCmd.addCmd(String.format("sudo ~/block_ip_task.sh"));
         remoteCmd.addCmd("rm -rf ~/block_ip_task.sh");
-        RemoteCmdResult remoteCmdResult = client.execCmdWithPTY(remoteCmd);
-        log.info(remoteCmdResult.getStdInfo());
+        client.execCmdWithPTY(remoteCmd);
         for (String ip : ipList) {
             log.info(String.format("Block ip %s, dalay time %s seconds, "
                             + "type %d.",
@@ -87,8 +86,7 @@ public class NetAccessUtils {
         remoteCmd.addCmd(String.format("chmod +x ~/block_port_task.sh"));
         remoteCmd.addCmd(String.format("sudo ~/block_port_task.sh"));
         remoteCmd.addCmd("rm -rf ~/block_port_task.sh");
-        RemoteCmdResult remoteCmdResult =client.execCmdWithPTY(remoteCmd);
-        log.info(remoteCmdResult.getStdInfo());
+        client.execCmdWithPTY(remoteCmd);
         log.info(String.format("Block port %s protcol %s, dalay time %d seconds.", port, protcol, delaySecond));
         return true;
     }

@@ -1,14 +1,17 @@
 package com.alibaba.pelican.demo;
 
+import com.alibaba.pelican.chaos.client.RemoteCmd;
 import com.alibaba.pelican.chaos.client.RemoteCmdClientConfig;
+import com.alibaba.pelican.chaos.client.RemoteCmdResult;
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
 import com.alibaba.pelican.chaos.client.utils.CpuUtils;
-import com.alibaba.pelican.chaos.client.utils.MemUtils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author moyun@middleware
  */
-public class DemoMem {
+@Slf4j
+public class DemoCommand {
 
     public static void main(String[] args) {
 
@@ -24,10 +27,7 @@ public class DemoMem {
         config.setPassword(password);
 
         RemoteCmdClient client = new RemoteCmdClient(config);
-        //内存占用单位为M
-        int percent = 6144;
-        //持续时间
-        int delayMinutes = 3;
-        MemUtils.adjustMemUsage(client, percent, delayMinutes);
+        RemoteCmdResult remoteCmdResult = client.execCmdWithPTY(new RemoteCmd("pwd"));
+        log.info(remoteCmdResult.getStdInfo());
     }
 }

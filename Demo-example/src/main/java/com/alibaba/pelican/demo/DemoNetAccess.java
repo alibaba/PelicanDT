@@ -39,9 +39,9 @@ public class DemoNetAccess {
 
         RemoteCmdClient client = new RemoteCmdClient(config);
         //网络访问IP比例
-        String blockIP = "39.105.209.40";
+        String blockIP = "39.96.47.158";
         //持续时间
-        int delaySecond = 120;
+        int delaySecond = 60;
         //通过该API控制网络中断
         NetAccessUtils.blockIPInput(client, blockIP, delaySecond);
     }

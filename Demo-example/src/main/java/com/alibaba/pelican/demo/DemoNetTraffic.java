@@ -30,7 +30,7 @@ public class DemoNetTraffic {
         //内存比例
         int delayTime = 1000;
         //持续时间
-        int delaySecond = 1000;
+        int delaySecond = 10;
         //通过该API控制网络延时
         NetTrafficUtils.setNetworkDelay(client, delayTime, delaySecond);
     }
