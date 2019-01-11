@@ -9,3 +9,70 @@ PelicanDT 具有以下特点：
     
 ## 使用指南
 https://help.aliyun.com/document_detail/102518.html
+
+## 快速开始
+
+### 安装PelicanDT SDK
+1. 将SDK添加到项目中
+2. 使用PelicanDT SDK有两种方式：
+- 下载SDK源码包，在下载中心下载最新版的JAVA SDK到本地，并import 到您的工作目录中。
+- 引入PelicanDT SDK依赖，通过maven二方库依赖的方式将PelicanDT的sdk加入到自己的项目中
+    ``````
+    <dependency>
+        <groupId>com.alibaba.pelican</groupId>
+        <artifactId>PelicanDT</artifactId>
+        <version>1.0.6</version>
+    </dependency>
+
+### 使用PelicanDT SDK
+
+以下代码示例展示了使用PelicanDT SDK使用方式：
+
+本地代码控制远程服务器执行命令：
+1. 创建并初始化RemoteCmdClient实例，RemoteCmdClient为远程服务器客户端。
+2. 填写远程服务器ip、userName、password信息
+3. 本地执行示例程序，向远程服务器执行pwd命令
+    ``````
+        import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
+        import lombok.extern.slf4j.Slf4j;
+        import org.junit.Test;
+          
+        /**
+         * @author moyun@middleware
+         */
+        @Slf4j
+        public class TestRemoteCmdClient {
+          
+            @Test
+            public void testRemoteCmdClient() {
+                //ECS可公网访问的IP
+                String ip = "";
+                //ECS用户名，一般为root
+                String userName = "";
+                //ECS登录密码
+                String password = "";
+          
+                //创建并初始化RemoteCmdClient实例
+                RemoteCmdClientConfig remoteCmdClientConfig = new RemoteCmdClientConfig();
+                remoteCmdClientConfig.setIp(ip);
+                remoteCmdClientConfig.setUserName(userName);
+                remoteCmdClientConfig.setPassword(password);
+                RemoteCmdClient client = new RemoteCmdClient(remoteCmdClientConfig);
+                
+                //执行pwd命令
+                RemoteCmdResult resultInfo = client.execCmdWithPTY(new RemoteCmd("pwd"));
+                log.info(resultInfo.getStdInfo());
+            }
+        }
+
+
+### 预期结果
+日志输出内容如下
+    
+    [root@iz2ze0kv2rqck9wpheu5vxz ~]$pwd
+    root
+    [root@iz2ze0kv2rqck9wpheu5vxz ~]$export HISTFILE=/dev/null
+    [root@iz2ze0kv2rqck9wpheu5vxz ~]$exit
+    logout
+    
+通过第2行内容可以看出，命令执行默认目录/root/
