@@ -10,7 +10,7 @@ PelicanDT 具有以下特点：
 ## 使用指南
 https://help.aliyun.com/document_detail/102518.html
 
-## 快速开始
+## 快速入门
 
 ### 安装PelicanDT SDK
 1. 将SDK添加到项目中
