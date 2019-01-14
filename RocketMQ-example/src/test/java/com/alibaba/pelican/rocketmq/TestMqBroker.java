@@ -25,6 +25,7 @@ import java.util.Map;
 public class TestMqBroker extends AbstractJUnit4PelicanTests {
 
 
+
 	private String ip;
 
 	{
