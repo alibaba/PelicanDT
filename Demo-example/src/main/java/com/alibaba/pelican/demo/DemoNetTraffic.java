@@ -16,11 +16,11 @@ public class DemoNetTraffic {
     public static void main(String[] args) {
 
         //服务器IP
-        String ip = "39.96.172.140";
+        String ip = "";
         //服务器用户名
-        String userName = "root";
+        String userName = "";
         //服务器登录密码
-        String password = "Hello1234";
+        String password = "";
         RemoteCmdClientConfig config = new RemoteCmdClientConfig();
         config.setIp(ip);
         config.setUserName(userName);
@@ -28,10 +28,11 @@ public class DemoNetTraffic {
 
         RemoteCmdClient client = new RemoteCmdClient(config);
         //内存比例
-        int delayTime = 1000;
+        int delayTime = 10;
         //持续时间
         int delaySecond = 10;
+        int reorder = 10;
         //通过该API控制网络延时
-        NetTrafficUtils.setNetworkDelay(client, delayTime, delaySecond);
+        NetTrafficUtils.settNetWorkReorder(client, delayTime, reorder, delaySecond);
     }
 }

@@ -27,6 +27,60 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NetTrafficUtils {
 
+    /**
+     * @author linqiuping
+     */
+    private static boolean doSetNetWorkReorder(RemoteCmdClient client, String networkCard, int delayTime, int percent, int delaySecond, int triggerSecond) {
+        if (delayTime > 100 || delayTime <= 0 || delaySecond < 0) {
+            log.error("The value is invalid, valid range is (0, 100]");
+            return false;
+        }
+
+        String cmdString = String.format("#\\!/bin/sh\n"
+                        + "function action()\n"
+                        + "{\n"
+                        + "sleep %d\n"
+                        + "/sbin/tc qdisc add dev %s root netem delay %dms reorder %s%% 100%%\n"
+                        + "if [ \\$? -ne 0 ]\n"
+                        + "then\n"
+                        + "/sbin/tc qdisc add dev %s root netem delay %dms reorder %s%% 100%%\n"
+                        + "fi\n"
+                        + "sleep %d\n"
+                        + "/sbin/tc qdisc del dev %s root\n"
+                        + "}\n"
+                        + "action &",
+                triggerSecond, networkCard, delayTime, percent,
+                networkCard, delayTime, percent, delaySecond, networkCard);
+
+        RemoteCmd remoteCmd = new RemoteCmd();
+        remoteCmd.addCmd(String.format("echo \"%s\" > ~/task.sh", cmdString));
+        remoteCmd.addCmd(String.format("chmod +x ~/task.sh"));
+        remoteCmd.addCmd(String.format("sudo ~/task.sh"));
+        remoteCmd.addCmd("rm -rf ~/task.sh");
+        client.execCmdWithPTY(remoteCmd);
+        log.info(String.format("Set network delay to %d%%, reorder %s .", delayTime, percent));
+        return true;
+    }
+
+    public static boolean settNetWorkReorder(RemoteCmdClient client, int delayTime, int percent, int delaySecond) {
+
+        return setNetWorkReorder(client, "eth0", delayTime, percent, delaySecond);
+    }
+
+    public static boolean setNetWorkReorder(RemoteCmdClient client, String networkCard, int delayTime, int percent, int delaySecond) {
+
+        return setNetWorkReorder(client, networkCard, delayTime, percent, delaySecond, 0);
+    }
+
+    public static boolean setNetWorkReorder(RemoteCmdClient client, String networkCard, int delayTime, int percent, int delaySecond, int triggerSecond) {
+
+        return doSetNetWorkReorder(client, networkCard, delayTime, percent, delaySecond, triggerSecond);
+    }
+
+    public static boolean setNetWorkReorder(RemoteCmdClient client, int delayTime, int percent, int delaySecond, int triggerSecond) {
+
+        return setNetWorkReorder(client, "eth0", delayTime, percent, delaySecond, triggerSecond);
+    }
 
     /**
      * @author linqiuping
@@ -41,10 +95,10 @@ public class NetTrafficUtils {
                         + "function action()\n"
                         + "{\n"
                         + "sleep %d\n"
-                        + "/sbin/tc qdisc add dev %s root netem duplicate %d%\n"
+                        + "/sbin/tc qdisc add dev %s root netem duplicate %d%%\n"
                         + "if [ \\$? -ne 0 ]\n"
                         + "then\n"
-                        + "/sbin/tc qdisc change dev %s root netem duplicate %d%\n"
+                        + "/sbin/tc qdisc change dev %s root netem duplicate %d%%\n"
                         + "fi\n"
                         + "sleep %d\n"
                         + "/sbin/tc qdisc del dev %s root\n"
@@ -59,7 +113,7 @@ public class NetTrafficUtils {
         remoteCmd.addCmd(String.format("sudo ~/task.sh"));
         remoteCmd.addCmd("rm -rf ~/task.sh");
         client.execCmdWithPTY(remoteCmd);
-        log.info(String.format("Set network duplicate to %d%, duplicate %s .", duplicate, delaySecond));
+        log.info(String.format("Set network duplicate to %d%%, delay %s .", duplicate, delaySecond));
         return true;
     }
 
@@ -75,7 +129,7 @@ public class NetTrafficUtils {
 
     public static boolean setNetWorkDuplicate(RemoteCmdClient client, String networkCard, int duplicate, int delaySecond, int triggerSecond) {
 
-        return setNetWorkDuplicate(client, networkCard, duplicate, delaySecond, triggerSecond);
+        return doSetNetWorkDuplicate(client, networkCard, duplicate, delaySecond, triggerSecond);
     }
 
     public static boolean setNetWorkDuplicate(RemoteCmdClient client, int duplicate, int delaySecond, int triggerSecond) {
