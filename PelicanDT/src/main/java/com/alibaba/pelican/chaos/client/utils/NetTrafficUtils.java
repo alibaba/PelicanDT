@@ -27,6 +27,62 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NetTrafficUtils {
 
+
+    /**
+     * @author linqiuping
+     */
+    private static boolean doSetNetWorkDuplicate(RemoteCmdClient client, String networkCard, int duplicate, int delaySecond, int triggerSecond) {
+        if (duplicate > 100 || duplicate <= 0 || delaySecond < 0) {
+            log.error("The value is invalid, valid range is (0, 100]");
+            return false;
+        }
+
+        String cmdString = String.format("#\\!/bin/sh\n"
+                        + "function action()\n"
+                        + "{\n"
+                        + "sleep %d\n"
+                        + "/sbin/tc qdisc add dev %s root netem duplicate %d%\n"
+                        + "if [ \\$? -ne 0 ]\n"
+                        + "then\n"
+                        + "/sbin/tc qdisc change dev %s root netem duplicate %d%\n"
+                        + "fi\n"
+                        + "sleep %d\n"
+                        + "/sbin/tc qdisc del dev %s root\n"
+                        + "}\n"
+                        + "action &",
+                triggerSecond, networkCard, duplicate,
+                networkCard, duplicate, delaySecond, networkCard);
+
+        RemoteCmd remoteCmd = new RemoteCmd();
+        remoteCmd.addCmd(String.format("echo \"%s\" > ~/task.sh", cmdString));
+        remoteCmd.addCmd(String.format("chmod +x ~/task.sh"));
+        remoteCmd.addCmd(String.format("sudo ~/task.sh"));
+        remoteCmd.addCmd("rm -rf ~/task.sh");
+        client.execCmdWithPTY(remoteCmd);
+        log.info(String.format("Set network duplicate to %d%, duplicate %s .", duplicate, delaySecond));
+        return true;
+    }
+
+    public static boolean settNetWorkDuplicate(RemoteCmdClient client, int duplicate, int delaySecond) {
+
+        return setNetWorkDuplicate(client, "eth0", duplicate, delaySecond);
+    }
+
+    public static boolean setNetWorkDuplicate(RemoteCmdClient client, String networkCard, int duplicate, int delaySecond) {
+
+        return setNetWorkDuplicate(client, networkCard, duplicate, delaySecond, 0);
+    }
+
+    public static boolean setNetWorkDuplicate(RemoteCmdClient client, String networkCard, int duplicate, int delaySecond, int triggerSecond) {
+
+        return setNetWorkDuplicate(client, networkCard, duplicate, delaySecond, triggerSecond);
+    }
+
+    public static boolean setNetWorkDuplicate(RemoteCmdClient client, int duplicate, int delaySecond, int triggerSecond) {
+
+        return setNetWorkDuplicate(client, "eth0", duplicate, delaySecond, triggerSecond);
+    }
+
     private static boolean doSetNetWorkDelay(RemoteCmdClient client, String networkCard, int delayTime, int delaySecond, int triggerSecond) {
         if (delayTime > 10000 || delayTime <= 0 || delaySecond < 0) {
             log.error("The value is invalid, valid range is (0, 10000]");
