@@ -16,10 +16,7 @@
 
 package com.alibaba.pelican.chaos.client;
 
-import com.alibaba.pelican.chaos.client.dto.NetstatInternetDto;
-
 import java.io.PipedInputStream;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -43,11 +40,15 @@ public interface ICmdExecutor {
 
     RemoteCmdResult scpAndExecScript(String path);
 
+    RemoteCmdResult scpAndExecScript(String filePath, boolean override);
+
     String killProcess(String keyWord);
 
     String uploadFile(String localFilePath, String remoteTargetDirectory);
 
-    boolean hasFolder(String directory);
+    boolean hasDirectory(String directory);
+
+    boolean hasFile(String filePath);
 
     String mkdir(String directory);
 

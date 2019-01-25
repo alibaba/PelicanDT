@@ -29,7 +29,7 @@
     </scm>
 
     <properties>
-        <PelicanDT.version>1.0.6</PelicanDT.version>
+        <PelicanDT.version>1.0.8</PelicanDT.version>
     </properties>
 
     <dependencies>

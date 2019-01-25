@@ -18,10 +18,9 @@ package com.alibaba.pelican.chaos.client.impl;
 
 import com.alibaba.pelican.chaos.client.*;
 import com.alibaba.pelican.chaos.client.cmd.*;
+import com.alibaba.pelican.chaos.client.cmd.event.CmdEvent;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugDisplayCallable;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugInputCallable;
-import com.alibaba.pelican.chaos.client.cmd.event.CmdEvent;
-import com.alibaba.pelican.chaos.client.dto.NetstatInternetDto;
 import com.alibaba.pelican.chaos.client.exception.ConnectException;
 import com.trilead.ssh2.*;
 import lombok.extern.slf4j.Slf4j;
@@ -636,11 +635,16 @@ public class RemoteCmdClient implements ICmdExecutor {
 
     @Override
     public RemoteCmdResult scpAndExecScript(String filePath) {
+        return scpAndExecScript(filePath, true);
+    }
+
+    @Override
+    public RemoteCmdResult scpAndExecScript(String filePath, boolean override) {
         if (StringUtils.isBlank(filePath)) {
             throw new RuntimeException("filePath is empty.");
         }
         String scriptDir = this.getDefaultDir() + "/scripts/";
-        this.createFile(filePath, scriptDir);
+        this.createFile(filePath, scriptDir, override);
         String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
         RemoteCmdResult remoteCmdResult = this.execScript(scriptDir + fileName);
         log.debug(remoteCmdResult.getStdInfo());
@@ -680,13 +684,26 @@ public class RemoteCmdClient implements ICmdExecutor {
 
 
     @Override
-    public boolean hasFolder(String path) {
+    public boolean hasDirectory(String path) {
         boolean res = true;
         String commandStr = String.format("[ -d %s ] && echo exist", path);
         RemoteCmd command = new RemoteCmd();
         command.addCmd(commandStr);
         String result = execCmdGetString(command);
-        if (result.isEmpty()) {
+        if (StringUtils.isEmpty(result)) {
+            res = false;
+        }
+        return res;
+    }
+
+    @Override
+    public boolean hasFile(String filePath) {
+        boolean res = true;
+        String commandStr = String.format("[ -f %s ] && echo exist", filePath);
+        RemoteCmd command = new RemoteCmd();
+        command.addCmd(commandStr);
+        String result = execCmdGetString(command);
+        if (StringUtils.isEmpty(result)) {
             res = false;
         }
         return res;
@@ -705,7 +722,7 @@ public class RemoteCmdClient implements ICmdExecutor {
         if (StringUtils.isBlank(fileName)) {
             return false;
         }
-        if (!this.hasFolder(remoteFolder)) {
+        if (!this.hasDirectory(remoteFolder)) {
             this.mkdir(remoteFolder);
         }
         File localFile = new File(fileName);
@@ -721,7 +738,6 @@ public class RemoteCmdClient implements ICmdExecutor {
         localFile.delete();
         return true;
     }
-
 
     public long getLocalFileSize(File fileName) {
         FileInputStream fis = null;
@@ -750,7 +766,7 @@ public class RemoteCmdClient implements ICmdExecutor {
         if (iStream == null) {
             return false;
         }
-        if (!this.hasFolder(remoteFolder)) {
+        if (!this.hasDirectory(remoteFolder)) {
             this.mkdir(remoteFolder);
         }
 
@@ -793,7 +809,57 @@ public class RemoteCmdClient implements ICmdExecutor {
         if (StringUtils.isBlank(fileName)) {
             return false;
         }
-        if (!this.hasFolder(destDirectory)) {
+        if (!this.hasDirectory(destDirectory)) {
+            this.mkdir(destDirectory);
+        }
+
+        File localFile = new File(fileName);
+        if (getLocalFileSize(localFile) == 0) {
+            BufferedInputStream fis = null;
+            FileOutputStream fos = null;
+            byte[] buffer = new byte[1024];
+            try {
+                localFile.createNewFile();
+                InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
+                fis = new BufferedInputStream(is);
+                fos = new FileOutputStream(localFile);
+                int bytesRead = 0;
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                log.error(ExceptionUtils.getMessage(e));
+                return false;
+            } finally {
+                try {
+                    if (fos != null) {
+                        fos.close();
+                    }
+                    if (fis != null) {
+                        fis.close();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        this.uploadFile(localFile.getAbsolutePath(), destDirectory);
+        localFile.delete();
+        return true;
+    }
+
+    public synchronized boolean createFile(String filePath, String destDirectory, boolean override) {
+        String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+        if (StringUtils.isBlank(fileName)) {
+            return false;
+        }
+
+        if (!override && this.hasFile(destDirectory + "/" + fileName)) {
+            throw new RuntimeException("this file is exist, please select mode override");
+        }
+
+        if (!this.hasDirectory(destDirectory)) {
             this.mkdir(destDirectory);
         }
 
