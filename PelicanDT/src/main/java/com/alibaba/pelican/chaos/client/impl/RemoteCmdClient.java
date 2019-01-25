@@ -24,11 +24,14 @@ import com.alibaba.pelican.chaos.client.debug.ClientDebugInputCallable;
 import com.alibaba.pelican.chaos.client.exception.ConnectException;
 import com.trilead.ssh2.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -871,6 +874,9 @@ public class RemoteCmdClient implements ICmdExecutor {
             try {
                 localFile.createNewFile();
                 InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath);
+                if (is == null) {
+                    is = FileUtils.openInputStream(new File(filePath));
+                }
                 fis = new BufferedInputStream(is);
                 fos = new FileOutputStream(localFile);
                 int bytesRead = 0;

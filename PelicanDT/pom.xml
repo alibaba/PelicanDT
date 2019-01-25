@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba.pelican</groupId>
     <artifactId>PelicanDT</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
     <name>PelicanDT</name>
