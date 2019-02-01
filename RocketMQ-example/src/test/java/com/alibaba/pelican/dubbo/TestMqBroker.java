@@ -1,4 +1,4 @@
-package com.alibaba.pelican.rocketmq;
+package com.alibaba.pelican.dubbo;
 
 import com.alibaba.pelican.deployment.junit.AbstractJUnit4PelicanTests;
 import com.alibaba.pelican.deployment.utils.CommonUtils;

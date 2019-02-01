@@ -1,4 +1,4 @@
-package com.alibaba.pelican.rocketmq;
+package com.alibaba.pelican.dubbo;
 
 import com.alibaba.pelican.chaos.client.impl.RemoteCmdClient;
 import com.alibaba.pelican.chaos.client.utils.NetAccessUtils;
