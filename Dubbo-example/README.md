@@ -24,6 +24,6 @@ Dubbo-example，是基于PelicanDT实现dubbo环境准备，禁止端口网络�
     2019-02-01 17:20:45 [INFO] [main] c.a.p.rocketmq.TestDubboNetwork - Operation timed out (Connection timed out)
     Hello 123123, response form provider: 10.66.204.25:20880
     
-通过第1行日志可以看出，8085端口断网
-通过第2行日志可以看出，在8085端口断网的情况下，接口访问超时
-通过第3行日志可以看出，端口网络恢复后，接口访问成功
+- 通过第1行日志可以看出，8085端口断网
+- 通过第2行日志可以看出，在8085端口断网的情况下，接口访问超时
+- 通过第3行日志可以看出，端口网络恢复后，接口访问成功
