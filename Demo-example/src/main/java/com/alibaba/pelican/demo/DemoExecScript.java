@@ -26,7 +26,7 @@ public class DemoExecScript {
         config.setPassword(password);
 
         RemoteCmdClient client = new RemoteCmdClient(config);
-        RemoteCmdResult result = client.scpAndExecScript("demo.sh");
+        RemoteCmdResult result = client.scpAndExecScript("demo1.sh");
         System.out.println(result.getStdInfo());
     }
 }
