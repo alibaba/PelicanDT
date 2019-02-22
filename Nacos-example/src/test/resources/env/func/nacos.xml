@@ -1,0 +1,16 @@
+<project>
+    <properties>
+        <param file="import" value="target/test-classes/env/func/nacos.properties"/>
+    </properties>
+    <envMode>nacos</envMode>
+    <machine>
+        <id>nacosMachine</id>
+        <ipAddress>${ip}</ipAddress>
+        <userName>${userName}</userName>
+        <password>${password}</password>
+        <timeout>600000</timeout>
+        <application>
+            <deployScriptPath>nacos.sh</deployScriptPath>
+        </application>
+    </machine>
+</project>
