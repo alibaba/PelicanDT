@@ -7,6 +7,10 @@ PelicanDT 具有以下特点：
 - 本地控制 Linux 系统执行命令。
 - 通过简单的操作对应用注入异常来模拟测试环境。例如：应用停服、CPU 过高、内存过高、网络中断、网络流量延时等环境。
     
+基于 PelicanDT 实现的Demo：
+- Dubbo测试Demo工程：[Dubbo-example](https://github.com/alibaba/PelicanDT/tree/master/Dubbo-example)
+- Nacos测试Demo工程：[Nacos-example](https://github.com/alibaba/PelicanDT/tree/master/Nacos-example)
+
 ## 使用指南
 https://help.aliyun.com/document_detail/102518.html
 
