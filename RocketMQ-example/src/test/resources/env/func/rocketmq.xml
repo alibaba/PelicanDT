@@ -2,17 +2,16 @@
     <properties>
         <param file="import" value="target/test-classes/env/func/rocketmq.properties"/>
     </properties>
-    <envMode>mqnamesrv</envMode>
+    <envMode>rocketmq</envMode>
     <machine>
         <id>demo1Machine</id>
         <ipAddress>${ip}</ipAddress>
         <userName>${userName}</userName>
         <password>${password}</password>
-        <timeout>600000</timeout>
+        <timeout>3600000</timeout>
         <application>
-            <id>mqnamesrv</id>
-            <deployScriptPath>mqnamesrv.sh</deployScriptPath>
-            <killProcessMark>mqnamesrv</killProcessMark>
+            <id>rocketmq</id>
+            <deployScriptPath>rocketmq.sh</deployScriptPath>
         </application>
     </machine>
 
