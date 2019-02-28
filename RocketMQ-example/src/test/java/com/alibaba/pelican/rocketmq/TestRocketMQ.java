@@ -38,7 +38,7 @@ public class TestRocketMQ extends AbstractJUnit4PelicanTests {
 				DefaultMQProducer("please_rename_unique_group_name");
 		producer.setNamesrvAddr(ip + ":9876");
 		producer.start();
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 5; i++) {
 			Message msg = new Message("TopicTest" /* Topic */,
 					"TagA" /* Tag */,
 					("Hello RocketMQ " +
