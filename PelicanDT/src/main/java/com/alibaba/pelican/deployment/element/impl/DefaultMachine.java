@@ -48,6 +48,7 @@ public class DefaultMachine extends AbstractElement implements Machine {
     protected String userName = "";
     protected String password = "";
     protected Integer timeout = 600 * 1000;
+    protected Integer coTimeout = 600 * 1000;
 
     @XStreamOmitField
     transient protected RemoteCmdClient remoteCmdClient;
@@ -62,6 +63,8 @@ public class DefaultMachine extends AbstractElement implements Machine {
         connectUnit.setIp(ipAddress);
         connectUnit.setUserName(userName);
         connectUnit.setPassword(password);
+        connectUnit.setSoTimeout(timeout);
+        connectUnit.setCoTimeout(coTimeout);
         this.remoteCmdClient = new RemoteCmdClient(connectUnit);
         for (Application application : getAllApplications()) {
             application.setRemoteCmdClient(remoteCmdClient);

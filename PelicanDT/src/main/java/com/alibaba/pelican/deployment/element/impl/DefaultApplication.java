@@ -53,6 +53,8 @@ public class DefaultApplication extends AbstractElement implements Application {
 
     protected String startScriptPath;
 
+    protected String stopScriptPath;
+
     protected String killProcessMark;
 
     protected boolean deploySkip = false;
@@ -164,8 +166,7 @@ public class DefaultApplication extends AbstractElement implements Application {
     @Override
     public void stop() {
         if (remoteCmdClient != null && remoteCmdClient.isReady()) {
-            remoteCmdClient.killProcess(this.killProcessMark);
-
+            remoteCmdClient.scpAndExecScript(this.stopScriptPath);
         } else {
             log.warn(String.format("No ssh remoteCmdClient for application [%s],can not excute stop method!", id));
         }

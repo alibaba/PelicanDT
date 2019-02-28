@@ -80,3 +80,7 @@ https://help.aliyun.com/document_detail/102518.html
     logout
     
 通过第2行内容可以看出，命令执行默认目录/root/
+
+### 如有疑问：请加钉钉
+
+![avatar](http://moyuns.oss-cn-hangzhou.aliyuncs.com/lADPDgQ9qg8emUzNBKnNAu4_750_1193.jpg)

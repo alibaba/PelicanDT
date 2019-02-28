@@ -1,10 +1,10 @@
 #!/bin/bash
 cd /root
-yum install wget
-yum install unzip
+yum -y install wget
+yum -y install unzip
 
 if [ ! -f "/root/jdk-8u141-linux-x64.tar.gz" ];then
-    wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u141-b15/336fa29ff2bb4ef291e347e091f7f4a7/jdk-8u141-linux-x64.tar.gz"
+    wget http://moyuns.oss-cn-hangzhou.aliyuncs.com/jdk-8u141-linux-x64.tar.gz
 fi
 if [ ! -d "/root/jdk1.8.0_141/" ];then
     tar -zxvf jdk-8u141-linux-x64.tar.gz
@@ -44,6 +44,10 @@ fi
 if [ ! -f "/root/dubbo-provider-1.0-SNAPSHOT.jar" ];then
     wget http://moyuns.oss-cn-hangzhou.aliyuncs.com/dubbo-provider-1.0-SNAPSHOT.jar
 fi
+if [ ! -f "/root/dubbo-provider-2-1.0-SNAPSHOT.jar" ];then
+    wget http://moyuns.oss-cn-hangzhou.aliyuncs.com/dubbo-provider-2-1.0-SNAPSHOT.jar
+fi
+
 
 ps -fe | grep zookeeper | grep -v grep
 if [ $? -ne 0 ]
@@ -52,16 +56,29 @@ then
    sleep 5s
 fi
 
+count=`ps -ef | grep dubbo | grep -v "grep" | wc -l`
+if [ $count gt 0 ]
+then
+    ps -ef | grep dubbo | grep -v grep | awk '{print $2}' | xargs kill -9
+    sleep 5s
+fi
+
 ps -fe | grep dubbo-provider-1.0 | grep -v grep
 if [ $? -ne 0 ]
 then
    nohup java -jar /root/dubbo-provider-1.0-SNAPSHOT.jar >/dev/null 2>&1 &
-   sleep 5s
+fi
+
+ps -fe | grep dubbo-provider-2-1.0 | grep -v grep
+if [ $? -ne 0 ]
+then
+   nohup java -jar /root/dubbo-provider-2-1.0-SNAPSHOT.jar >/dev/null 2>&1 &
 fi
 
 ps -fe | grep dubbo-consumer-1.0 | grep -v grep
 if [ $? -ne 0 ]
 then
    nohup java -jar /root/dubbo-consumer-1.0-SNAPSHOT.jar >/dev/null 2>&1 &
-   sleep 5s
 fi
+
+sleep 20s

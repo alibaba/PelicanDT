@@ -8,7 +8,7 @@
         <ipAddress>${ip}</ipAddress>
         <userName>${userName}</userName>
         <password>${password}</password>
-        <timeout>600000</timeout>
+        <timeout>3600000</timeout>
         <application>
             <deployScriptPath>dubbo.sh</deployScriptPath>
         </application>
