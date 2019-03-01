@@ -10,6 +10,7 @@ PelicanDT 具有以下特点：
 基于 PelicanDT 实现的Demo：
 - Dubbo测试Demo工程：[Dubbo-example](https://github.com/alibaba/PelicanDT/tree/master/Dubbo-example)
 - Nacos测试Demo工程：[Nacos-example](https://github.com/alibaba/PelicanDT/tree/master/Nacos-example)
+- RocketMQ测试Demo工程：[RocketMQ-example](https://github.com/alibaba/PelicanDT/tree/master/RocketMQ-example)
 
 ## 使用指南
 https://help.aliyun.com/document_detail/102518.html
