@@ -16,24 +16,58 @@
 
 package com.alibaba.pelican.chaos.client.impl;
 
-import com.alibaba.pelican.chaos.client.*;
-import com.alibaba.pelican.chaos.client.cmd.*;
+import com.alibaba.pelican.chaos.client.ICmdExecutor;
+import com.alibaba.pelican.chaos.client.RemoteCmd;
+import com.alibaba.pelican.chaos.client.RemoteCmdClientConfig;
+import com.alibaba.pelican.chaos.client.RemoteCmdClientStream;
+import com.alibaba.pelican.chaos.client.RemoteCmdResult;
+import com.alibaba.pelican.chaos.client.cmd.CmdConstant;
+import com.alibaba.pelican.chaos.client.cmd.JpsCmdAction;
+import com.alibaba.pelican.chaos.client.cmd.KillPIDCmdAction;
+import com.alibaba.pelican.chaos.client.cmd.NetstatANCmdAction;
+import com.alibaba.pelican.chaos.client.cmd.NetstatLNPCmdAction;
+import com.alibaba.pelican.chaos.client.cmd.PIDCmdAction;
 import com.alibaba.pelican.chaos.client.cmd.event.CmdEvent;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugDisplayCallable;
 import com.alibaba.pelican.chaos.client.debug.ClientDebugInputCallable;
 import com.alibaba.pelican.chaos.client.exception.ConnectException;
-import com.trilead.ssh2.*;
+import com.trilead.ssh2.ChannelCondition;
+import com.trilead.ssh2.Connection;
+import com.trilead.ssh2.SCPClient;
+import com.trilead.ssh2.Session;
+import com.trilead.ssh2.StreamGobbler;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author moyun@middleware
@@ -347,6 +381,9 @@ public class RemoteCmdClient implements ICmdExecutor {
         } catch (IOException e) {
             log.error(String.format("Close session %s failed!", ip));
             return res;
+        } catch (InterruptedException e) {
+            log.error("An InterruptedException occurs when session connecting.");
+            return res;
         } finally {
             if (stdout != null) {
                 try {
@@ -435,6 +472,8 @@ public class RemoteCmdClient implements ICmdExecutor {
 
         } catch (IOException e) {
             log.error(String.format("Close session %s failed!", ip));
+        } catch (InterruptedException e) {
+            log.error("An InterruptedException occurs when session connecting.");
         } finally {
             if (stderr != null) {
                 try {
@@ -566,6 +605,9 @@ public class RemoteCmdClient implements ICmdExecutor {
 
         } catch (IOException e) {
             log.error(String.format("Close session %s failed!", ip));
+            return res;
+        } catch (InterruptedException e) {
+            log.error("An InterruptedException occurs when session connecting.");
             return res;
         } finally {
             if (stdout != null) {

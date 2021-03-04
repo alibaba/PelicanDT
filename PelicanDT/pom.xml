@@ -29,7 +29,7 @@
     </scm>
 
     <properties>
-        <com.trilead.version>1.0.0-build217</com.trilead.version>
+        <org.jenkins-ci.version>build-217-jenkins-11</org.jenkins-ci.version>
         <commons-lang3.version>3.5</commons-lang3.version>
         <org.jasypt.version>1.9.2</org.jasypt.version>
         <ch.qos.logback.version>1.0.13</ch.qos.logback.version>
@@ -67,9 +67,9 @@
             <version>${ch.qos.logback.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.trilead</groupId>
+            <groupId>org.jenkins-ci</groupId>
             <artifactId>trilead-ssh2</artifactId>
-            <version>${com.trilead.version}</version>
+            <version>${org.jenkins-ci.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jasypt</groupId>
